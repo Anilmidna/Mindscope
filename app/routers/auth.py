@@ -1,22 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from jose import JWTError
+import uuid
 
-from app.db.session import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from jose import JWTError
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
 from app.core.security import create_access_token, create_refresh_token, decode_token
+from app.db.session import get_db
+from app.models.user import User
 from app.schemas.auth import (
-    GoogleCallbackRequest,
-    TokenResponse,
-    RefreshRequest,
     AccessTokenResponse,
+    GoogleCallbackRequest,
     LogoutRequest,
+    RefreshRequest,
+    TokenResponse,
 )
 from app.services.auth_service import (
-    exchange_google_code,
-    upsert_user,
     blocklist_refresh_token,
+    exchange_google_code,
     is_refresh_token_blocked,
+    upsert_user,
 )
 
 router = APIRouter()
@@ -54,7 +57,7 @@ async def google_callback(body: GoogleCallbackRequest, db: Session = Depends(get
 
 @router.post("/refresh", response_model=AccessTokenResponse)
 async def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
-    if is_refresh_token_blocked(body.refresh_token):
+    if is_refresh_token_blocked(db, body.refresh_token):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
 
     try:
@@ -69,8 +72,6 @@ async def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token claims")
 
-    from app.models.user import User
-    import uuid
     user = db.query(User).filter(User.id == uuid.UUID(user_id)).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
@@ -84,7 +85,7 @@ async def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(body: LogoutRequest):
+async def logout(body: LogoutRequest, db: Session = Depends(get_db)):
     try:
         payload = decode_token(body.refresh_token)
     except JWTError:
@@ -93,4 +94,4 @@ async def logout(body: LogoutRequest):
     if payload.get("type") != "refresh":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not a refresh token")
 
-    blocklist_refresh_token(body.refresh_token)
+    blocklist_refresh_token(db, body.refresh_token)
