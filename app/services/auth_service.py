@@ -1,16 +1,20 @@
+import hashlib
+
 import httpx
 from jose import jwt as jose_jwt, JWTError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.user import User
+from app.models.token_blocklist import RefreshTokenBlocklist
 
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs"
 GOOGLE_ISSUER = "https://accounts.google.com"
 
-# In-memory refresh token blocklist (replaced by DB table on Day 4)
-_refresh_token_blocklist: set[str] = set()
+
+def _token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 async def exchange_google_code(code: str, code_verifier: str, redirect_uri: str) -> dict:
@@ -74,9 +78,23 @@ def upsert_user(db: Session, google_sub: str, email: str, name: str | None) -> U
     return user
 
 
-def blocklist_refresh_token(token: str) -> None:
-    _refresh_token_blocklist.add(token)
+def blocklist_refresh_token(db: Session, token: str) -> None:
+    h = _token_hash(token)
+    already_blocked = (
+        db.query(RefreshTokenBlocklist)
+        .filter(RefreshTokenBlocklist.token_hash == h)
+        .first()
+    )
+    if already_blocked:
+        return
+    db.add(RefreshTokenBlocklist(token_hash=h))
+    db.commit()
 
 
-def is_refresh_token_blocked(token: str) -> bool:
-    return token in _refresh_token_blocklist
+def is_refresh_token_blocked(db: Session, token: str) -> bool:
+    return (
+        db.query(RefreshTokenBlocklist)
+        .filter(RefreshTokenBlocklist.token_hash == _token_hash(token))
+        .first()
+        is not None
+    )
