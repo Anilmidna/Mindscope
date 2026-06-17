@@ -1,0 +1,120 @@
+{
+  "version": "v1",
+  "description": "Persona intake form — collected after login, before payment. Drives item bank selection and LLM report personalization.",
+  "fields": [
+    {
+      "field_id": "life_stage",
+      "label": "What best describes you right now?",
+      "type": "single_select",
+      "options": [
+        "School Student (Class 9-12)",
+        "Undergraduate Student",
+        "Final-Year / Graduate Student",
+        "Working Professional (0-3 years)",
+        "Working Professional (3-10 years)",
+        "Working Professional (10+ years)",
+        "Career Switcher",
+        "Currently Not Working"
+      ],
+      "required": true,
+      "maps_to_persona": {
+        "School Student (Class 9-12)": "student",
+        "Undergraduate Student": "student",
+        "Final-Year / Graduate Student": "student",
+        "Working Professional (0-3 years)": "professional",
+        "Working Professional (3-10 years)": "professional",
+        "Working Professional (10+ years)": "professional",
+        "Career Switcher": "professional",
+        "Currently Not Working": "professional"
+      },
+      "note": "This field determines which RIASEC item bank to serve."
+    },
+    {
+      "field_id": "domain",
+      "label": "What is your primary field or area of study/work?",
+      "type": "single_select_with_other",
+      "options": [
+        "Engineering / Technology",
+        "Science / Research",
+        "Commerce / Finance / Accounting",
+        "Arts / Humanities / Social Sciences",
+        "Medicine / Healthcare",
+        "Law",
+        "Design / Architecture",
+        "Management / Business",
+        "Education / Teaching",
+        "Government / Public Service"
+      ],
+      "required": true,
+      "note": "Used in LLM prompt for domain-aware career suggestions."
+    },
+    {
+      "field_id": "specialization",
+      "label": "What is your specialization or job title?",
+      "type": "text",
+      "max_chars": 100,
+      "placeholder": "e.g., Computer Science, Data Analyst, Mechanical Engineering",
+      "required": false,
+      "note": "Free text — gives the LLM specific context for career direction mapping."
+    },
+    {
+      "field_id": "future_goals",
+      "label": "What are you hoping to achieve in the next 2-3 years?",
+      "type": "text",
+      "max_chars": 200,
+      "placeholder": "e.g., Switch to data science, get promoted to manager, start a business",
+      "required": true,
+      "note": "Key LLM grounding field — report compares scores against stated goals."
+    },
+    {
+      "field_id": "satisfaction",
+      "label": "How satisfied are you with your current career direction?",
+      "type": "slider",
+      "min": 1,
+      "max": 10,
+      "labels": { "1": "Very Unsatisfied", "10": "Very Satisfied" },
+      "required": true,
+      "note": "Low satisfaction + mismatched RIASEC = strong signal for career pivot suggestion."
+    },
+    {
+      "field_id": "challenges",
+      "label": "What's your biggest career challenge right now?",
+      "type": "text",
+      "max_chars": 200,
+      "placeholder": "e.g., Not sure which direction to go, feel stuck in current role",
+      "required": false,
+      "note": "Used in LLM friction-points and next-steps sections."
+    },
+    {
+      "field_id": "education_level",
+      "label": "Highest education completed",
+      "type": "single_select",
+      "options": [
+        "Class 10 / SSC",
+        "Class 12 / HSC",
+        "Diploma",
+        "Bachelor's Degree",
+        "Master's Degree",
+        "PhD / Doctorate",
+        "Professional Certification"
+      ],
+      "required": true,
+      "note": "Context for norm group selection and LLM career-level framing."
+    },
+    {
+      "field_id": "preferred_work_style",
+      "label": "Which work environment appeals to you more?",
+      "type": "single_select",
+      "options": [
+        "Structured corporate environment",
+        "Fast-paced startup",
+        "Research / academic setting",
+        "Freelance / independent",
+        "Government / public sector",
+        "Not sure yet"
+      ],
+      "required": false,
+      "note": "Shapes career-direction suggestions in the LLM report."
+    }
+  ]
+}

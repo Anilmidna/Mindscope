@@ -1,0 +1,324 @@
+{
+  "persona": "student",
+  "persona_label": "College / Final-Year Student",
+  "framework": "RIASEC",
+  "version": "draft-v1",
+  "scale": "likert-5",
+  "scale_labels": {
+    "1": "Strongly Disagree",
+    "2": "Disagree",
+    "3": "Neutral",
+    "4": "Agree",
+    "5": "Strongly Agree"
+  },
+  "items": [
+    {
+      "item_id": "S-R01",
+      "text": "I enjoy building working models or doing hands-on experiments in the lab.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R02",
+      "text": "I'd rather fix a broken device myself than take it to a repair shop.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R03",
+      "text": "I find myself drawn to workshops that involve tools, machines, or physical materials.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R04",
+      "text": "I like tinkering with electronics, circuits, or hardware setups in my free time.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R05",
+      "text": "I'd enjoy a summer internship where I work with physical equipment or field installations.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R06",
+      "text": "I prefer assignments that produce a tangible output over purely theoretical ones.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R07",
+      "text": "Setting up a home lab or Raspberry Pi project sounds exciting to me.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-R08",
+      "text": "I enjoy sports, outdoor activities, or physical challenges more than desk work.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I01",
+      "text": "I often read beyond what's assigned because I'm curious about the topic.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I02",
+      "text": "I enjoy figuring out why something works, not just how to use it.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I03",
+      "text": "I find research papers or technical deep-dives more interesting than most people do.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I04",
+      "text": "I like solving puzzles, brain teasers, or logic problems in my spare time.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I05",
+      "text": "I'd rather investigate the root cause of a bug than just apply a quick fix.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I06",
+      "text": "I enjoy subjects that require deep analytical thinking over memorization.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I07",
+      "text": "I'd be interested in a career that involves continuous learning and research.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-I08",
+      "text": "Collecting and analyzing data to find patterns excites me.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A01",
+      "text": "I enjoy designing posters, presentations, or creative projects for college events.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A02",
+      "text": "I often come up with unconventional solutions that others wouldn't think of.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A03",
+      "text": "I enjoy writing — blogs, stories, poems, or even long social media posts.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A04",
+      "text": "I'm drawn to courses or electives that involve design, media, or creative expression.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A05",
+      "text": "I'd rather build a creative UI/UX for a project than optimize its backend performance.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A06",
+      "text": "I enjoy photography, video editing, or creating visual content.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A07",
+      "text": "I like working on projects where I can express my own style or vision.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-A08",
+      "text": "I find myself modding games, creating digital art, or experimenting with music production.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S01",
+      "text": "I enjoy tutoring classmates or explaining difficult concepts to friends.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S02",
+      "text": "I'm usually the person people come to when they need advice or support.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S03",
+      "text": "I'd enjoy volunteering for a social cause or community service project.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S04",
+      "text": "I prefer group projects where I can collaborate and help others contribute.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S05",
+      "text": "I'd be interested in mentoring juniors or being a student council member.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S06",
+      "text": "I feel satisfied when I help someone learn something new.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S07",
+      "text": "I'm drawn to careers in education, counseling, healthcare, or social work.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-S08",
+      "text": "I'd rather resolve a conflict in a team than focus only on my own deliverable.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E01",
+      "text": "I enjoy organizing college events, fests, or club activities.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E02",
+      "text": "I often find myself taking charge in group projects, even when not assigned as leader.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E03",
+      "text": "I like pitching ideas — in class, in competitions, or to friends.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E04",
+      "text": "I've thought seriously about starting a business or side project for profit.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E05",
+      "text": "I'd rather lead a team in a hackathon than just code alone.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E06",
+      "text": "I enjoy debating, public speaking, or persuading others.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E07",
+      "text": "I'm energized by networking events, meetups, or professional conferences.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-E08",
+      "text": "I'd enjoy a role where my income depends on my ability to sell or influence.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C01",
+      "text": "I keep my notes, files, and folders well-organized and easy to find.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C02",
+      "text": "I prefer assignments with clear instructions and defined deliverables.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C03",
+      "text": "I enjoy tasks that require attention to detail — data entry, proofreading, formatting.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C04",
+      "text": "I like maintaining schedules, to-do lists, or spreadsheets to track progress.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C05",
+      "text": "I'd be comfortable in a role that involves following standard procedures and compliance rules.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C06",
+      "text": "I find it satisfying to organize an event's logistics — budgets, timelines, checklists.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C07",
+      "text": "I prefer working in structured environments over chaotic or fast-changing ones.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "S-C08",
+      "text": "I'd rather document a process correctly than improvise on the fly.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    }
+  ],
+  "attention_checks": [
+    {
+      "item_id": "S-ATT01",
+      "text": "Please select 'Agree' for this statement.",
+      "expected_answer": 4,
+      "position_hint": "insert around item 15-20"
+    },
+    {
+      "item_id": "S-ATT02",
+      "text": "I have never used any electronic device in my life.",
+      "expected_answer_range": [1, 2],
+      "position_hint": "insert around item 30-35"
+    },
+    {
+      "item_id": "S-ATT03",
+      "text": "I can read and understand the questions in this assessment.",
+      "expected_answer_range": [4, 5],
+      "position_hint": "insert around item 40-45"
+    }
+  ]
+}
