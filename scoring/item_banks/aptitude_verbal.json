@@ -1,0 +1,191 @@
+{
+  "framework": "Aptitude",
+  "domain": "verbal",
+  "domain_label": "Verbal Reasoning",
+  "version": "draft-v1",
+  "item_type": "multiple_choice",
+  "time_limit_seconds": 900,
+  "instructions": "Choose the best answer for each question. You have 15 minutes to complete this section.",
+  "items": [
+    {
+      "item_id": "VB-01",
+      "text": "Choose the word most similar in meaning to 'ELOQUENT':",
+      "options": [
+        "Silent",
+        "Articulate",
+        "Confused",
+        "Aggressive"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "VB-02",
+      "text": "Choose the word most opposite in meaning to 'DILIGENT':",
+      "options": [
+        "Careful",
+        "Lazy",
+        "Intelligent",
+        "Honest"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "VB-03",
+      "text": "Fill in the blank: 'The committee decided to ___ the proposal until more data was available.'",
+      "options": [
+        "accept",
+        "defer",
+        "ignore",
+        "celebrate"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "VB-04",
+      "text": "Identify the correctly punctuated sentence:",
+      "options": [
+        "Its important to review the teams performance.",
+        "It's important to review the teams performance.",
+        "It's important to review the team's performance.",
+        "Its important to review the team's performance."
+      ],
+      "correct_answer": 2,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "VB-05",
+      "text": "'Benevolent' is to 'Kind' as 'Malevolent' is to ___:",
+      "options": [
+        "Generous",
+        "Cruel",
+        "Gentle",
+        "Brave"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "VB-06",
+      "text": "Read the passage: 'Despite initial resistance from stakeholders, the CEO pushed for digital transformation. Within two years, operational costs dropped 30% and customer satisfaction rose by 22%.' What can be inferred?",
+      "options": [
+        "The stakeholders were wrong to resist",
+        "Digital transformation had measurable positive outcomes",
+        "The CEO ignored stakeholder concerns",
+        "Customer satisfaction was the primary goal"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "VB-07",
+      "text": "Which sentence is grammatically correct?",
+      "options": [
+        "Neither the manager nor the employees was informed.",
+        "Neither the manager nor the employees were informed.",
+        "Neither the manager or the employees were informed.",
+        "Neither the manager nor the employees have been inform."
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "VB-08",
+      "text": "Arrange the sentences to form a coherent paragraph:\n(P) However, the long-term benefits outweigh the initial costs.\n(Q) Implementing cloud infrastructure requires significant upfront investment.\n(R) Companies report an average 40% reduction in IT overhead within three years.\n(S) This includes training, migration, and new security protocols.",
+      "options": [
+        "Q, S, P, R",
+        "Q, P, S, R",
+        "P, Q, R, S",
+        "S, Q, P, R"
+      ],
+      "correct_answer": 0,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "VB-09",
+      "text": "Choose the word that best completes: 'The researcher's findings were ___, contradicting decades of established theory.'",
+      "options": [
+        "conventional",
+        "mundane",
+        "iconoclastic",
+        "predictable"
+      ],
+      "correct_answer": 2,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "VB-10",
+      "text": "A memo states: 'All employees must complete compliance training by March 31. Extensions will not be granted.' An employee joins on March 25. Which statement is most accurate?",
+      "options": [
+        "The new employee is exempt from compliance training",
+        "The new employee must complete training by March 31",
+        "The new employee can request an extension",
+        "The memo does not apply to new employees"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "VB-11",
+      "text": "Read the passage: 'While AI can process vast datasets and identify patterns beyond human capability, critics argue it lacks the contextual judgment and ethical reasoning that experienced professionals bring. Proponents counter that AI augments rather than replaces human judgment.' The author's tone is best described as:",
+      "options": [
+        "Strongly in favour of AI",
+        "Dismissive of AI capabilities",
+        "Balanced and analytical",
+        "Pessimistic about technology"
+      ],
+      "correct_answer": 2,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "VB-12",
+      "text": "Identify the logical flaw: 'Our company's revenue increased after we launched the new marketing campaign. Therefore, the campaign caused the revenue increase.'",
+      "options": [
+        "Circular reasoning",
+        "Post hoc ergo propter hoc (correlation assumed as causation)",
+        "Straw man argument",
+        "Appeal to authority"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "VB-13",
+      "text": "Choose the best word: 'The politician's speech was deliberately ___, allowing supporters and opponents alike to interpret it favourably.'",
+      "options": [
+        "transparent",
+        "equivocal",
+        "decisive",
+        "inflammatory"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "VB-14",
+      "text": "An email reads: 'We appreciate your interest in the position. After careful consideration, we have decided to move forward with candidates whose experience more closely aligns with our current needs.' This most likely means:",
+      "options": [
+        "They want a second interview",
+        "The candidate is rejected",
+        "The position has been filled internally",
+        "They are still deciding"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "VB-15",
+      "text": "Which statement, if true, most weakens the argument: 'Remote work reduces productivity because employees are not directly supervised'?",
+      "options": [
+        "Many remote employees work longer hours than office employees",
+        "Some managers prefer in-person supervision",
+        "Studies show supervised and unsupervised workers produce equal output when given clear goals and autonomy",
+        "Remote work saves companies money on office space"
+      ],
+      "correct_answer": 2,
+      "difficulty": "hard"
+    }
+  ]
+}

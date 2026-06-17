@@ -1,0 +1,191 @@
+{
+  "framework": "Aptitude",
+  "domain": "spatial",
+  "domain_label": "Spatial Reasoning",
+  "version": "draft-v1",
+  "item_type": "multiple_choice",
+  "time_limit_seconds": 900,
+  "instructions": "Choose the best answer for each question. These questions test your ability to visualise shapes, patterns, and spatial relationships. You have 15 minutes to complete this section.",
+  "items": [
+    {
+      "item_id": "SP-01",
+      "text": "A square piece of paper is folded in half once, then a corner is cut off. How many holes appear when the paper is unfolded?",
+      "options": [
+        "1",
+        "2",
+        "4",
+        "0"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "SP-02",
+      "text": "If you rotate the letter 'L' 90 degrees clockwise, which shape do you get?",
+      "options": [
+        "⌐ (reversed L, bottom-right corner)",
+        "Γ (upside-down L)",
+        "J shape",
+        "T shape"
+      ],
+      "correct_answer": 0,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "SP-03",
+      "text": "How many faces does a triangular prism have?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "SP-04",
+      "text": "Which shape is the mirror image of a 'P' reflected along a vertical axis?",
+      "options": [
+        "q",
+        "d",
+        "b",
+        "p"
+      ],
+      "correct_answer": 0,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "SP-05",
+      "text": "A cube has each face painted a different colour: Red (top), Blue (bottom), Green (front), Yellow (back), White (left), Black (right). If you tilt the cube forward 90°, which colour is now on top?",
+      "options": [
+        "Green",
+        "Yellow",
+        "Blue",
+        "Black"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "SP-06",
+      "text": "A flat cross-shaped net (one centre square and four surrounding squares) is folded into a box. Which face is opposite the centre square?",
+      "options": [
+        "The box has no opposite face — it is open-topped",
+        "One of the side squares",
+        "The centre square is opposite itself",
+        "It depends on folding direction"
+      ],
+      "correct_answer": 0,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "SP-07",
+      "text": "Count the total number of squares (of all sizes) in a 3×3 grid.",
+      "options": [
+        "9",
+        "10",
+        "13",
+        "14"
+      ],
+      "correct_answer": 3,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "SP-08",
+      "text": "A shape is made of 5 unit cubes: 3 in a row, plus 1 on top of the left cube and 1 on top of the right cube. How many unit cubes would be needed to fill this into a complete 3×2×1 rectangular block?",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correct_answer": 0,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "SP-09",
+      "text": "Which of these 2D shapes CANNOT tile a flat surface without gaps or overlaps using only copies of itself?",
+      "options": [
+        "Equilateral triangle",
+        "Square",
+        "Regular hexagon",
+        "Regular pentagon"
+      ],
+      "correct_answer": 3,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "SP-10",
+      "text": "You are facing North. You turn 90° clockwise, then 180°, then 90° anti-clockwise. Which direction are you now facing?",
+      "options": [
+        "North",
+        "South",
+        "East",
+        "West"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "SP-11",
+      "text": "A solid cylinder is cut with a plane at a 45° angle to its base. What shape is the cross-section?",
+      "options": [
+        "Circle",
+        "Ellipse",
+        "Rectangle",
+        "Triangle"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "SP-12",
+      "text": "A 4×4×4 cube is built from 64 unit cubes. The entire outer surface is painted. How many unit cubes have NO painted face?",
+      "options": [
+        "4",
+        "8",
+        "12",
+        "16"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "SP-13",
+      "text": "A piece of paper is folded in half twice (into quarters), then a single circular hole is punched through all layers in the centre. How many holes are visible when the paper is fully unfolded?",
+      "options": [
+        "1",
+        "2",
+        "4",
+        "8"
+      ],
+      "correct_answer": 2,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "SP-14",
+      "text": "Two gears are meshed. Gear A has 20 teeth and Gear B has 30 teeth. If Gear A rotates 3 full turns clockwise, how many turns does Gear B make and in which direction?",
+      "options": [
+        "2 turns clockwise",
+        "2 turns anti-clockwise",
+        "4.5 turns clockwise",
+        "4.5 turns anti-clockwise"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "SP-15",
+      "text": "A wireframe cube is viewed from directly above one corner (so you look straight down the space diagonal). What 2D shape do you see?",
+      "options": [
+        "Square",
+        "Regular hexagon",
+        "Irregular hexagon",
+        "Octagon"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    }
+  ]
+}
