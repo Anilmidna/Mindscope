@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, DateTime, Uuid, func
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -15,3 +16,5 @@ class User(Base):
     context_of_origin = Column(String(50), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    sessions = relationship("AssessmentSession", back_populates="user")

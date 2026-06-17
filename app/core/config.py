@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     # SES
     SES_FROM_EMAIL: str = "reports@mindscope.ai"
 
-    # Bedrock
-    BEDROCK_MODEL_ID: str = "anthropic.claude-sonnet-4-5"
+    # Bedrock — must use cross-region inference profile, not direct model ID
+    BEDROCK_MODEL_ID: str = "us.anthropic.claude-sonnet-4-6"
+    BEDROCK_OPUS_MODEL_ID: str = "us.anthropic.claude-opus-4-7"
 
     # App
     APP_ENV: str = "development"
