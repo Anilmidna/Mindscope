@@ -5,7 +5,7 @@ uvicorn[standard]==0.32.1
 # Database
 sqlalchemy==2.0.36
 alembic==1.14.0
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.12
 
 # Settings
 pydantic-settings==2.6.1
@@ -16,6 +16,10 @@ httpx==0.28.1
 
 # AWS
 boto3==1.35.88
+
+# LangChain + Bedrock (runtime model switching)
+langchain-core>=0.3.0
+langchain-aws>=0.2.0
 
 # PDF generation
 weasyprint==62.3
