@@ -17,6 +17,7 @@ from app.models.report import Report
 from app.models.response import Response
 from app.models.score import Score
 from app.models.session import AssessmentSession
+from scoring.aptitude import score as aptitude_score
 from scoring.ocean import score as ocean_score
 from scoring.profile_builder import build_profile
 from scoring.riasec import score as riasec_score
@@ -72,13 +73,18 @@ def run_scoring_pipeline(
 
         riasec_responses = by_domain.get("RIASEC", [])
         ocean_responses = by_domain.get("OCEAN", [])
+        aptitude_responses = {
+            "Logical":   by_domain.get("Logical", []),
+            "Numerical": by_domain.get("Numerical", []),
+            "Verbal":    by_domain.get("Verbal", []),
+            "Spatial":   by_domain.get("Spatial", []),
+        }
 
         # ── 2. Score ───────────────────────────────────────────────────────
         riasec_result = riasec_score(riasec_responses)
         ocean_result = ocean_score(ocean_responses)
-
-        # Aptitude: Week 2 — use zero placeholders for now
-        aptitude = {"logical": 0, "numerical": 0, "verbal": 0, "spatial": 0}
+        aptitude_result = aptitude_score(aptitude_responses)
+        aptitude = aptitude_result.as_scores_dict()
 
         # ── 3. Bias flags ──────────────────────────────────────────────────
         all_responses = [r for domain_list in by_domain.values() for r in domain_list]
@@ -95,9 +101,9 @@ def run_scoring_pipeline(
 
         # ── 4. Persist scores ──────────────────────────────────────────────
         percentiles = {
-            "riasec": {k: round((v / 100) * 100, 1) for k, v in riasec_result.normalized.items()},
+            "riasec": riasec_result.normalized,
             "ocean": ocean_result.percentiles,
-            "aptitude": aptitude,
+            "aptitude": aptitude_result.as_percentiles_dict(),
         }
 
         score_row = db.query(Score).filter(Score.session_id == session.id).first()

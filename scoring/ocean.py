@@ -36,10 +36,11 @@ class OCEANResult:
 
 
 def _extract_trait(item_id: str) -> str:
-    """Extract trait letter from item_id like 'BF-O01' or 'O-C04'."""
+    """Extract trait letter from item_id like 'O-01', 'C-03', 'N-10'.
+    Format from ocean.json: trait letter + dash + two-digit number."""
     parts = item_id.split("-")
-    if len(parts) >= 2:
-        return parts[1][0].upper()
+    if len(parts) >= 1:
+        return parts[0].upper()
     return ""
 
 

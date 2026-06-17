@@ -16,6 +16,7 @@ from app.schemas.session import (
     QuestionItem,
     ResponseItem,
     LIFE_STAGE_TO_PERSONA,
+    B2B_CONTEXTS,
 )
 
 # Server-side time limits per aptitude domain (seconds)
@@ -29,13 +30,13 @@ APTITUDE_TIME_LIMITS = {
 TIMED_DOMAINS = set(APTITUDE_TIME_LIMITS.keys())
 
 ITEM_BANK_PATHS = {
-    "RIASEC_student":     Path("scoring/item_banks/riasec_student.json"),
+    "RIASEC_student":      Path("scoring/item_banks/riasec_student.json"),
     "RIASEC_professional": Path("scoring/item_banks/riasec_professional.json"),
-    "OCEAN":              Path("scoring/item_banks/ocean.json"),
-    "Logical":            Path("scoring/item_banks/aptitude_logical.json"),
-    "Numerical":          Path("scoring/item_banks/aptitude_numerical.json"),
-    "Verbal":             Path("scoring/item_banks/aptitude_verbal.json"),
-    "Spatial":            Path("scoring/item_banks/aptitude_spatial.json"),
+    "OCEAN":               Path("scoring/item_banks/ocean.json"),
+    "Logical":             Path("scoring/item_banks/aptitude_logical.json"),
+    "Numerical":           Path("scoring/item_banks/aptitude_numerical.json"),
+    "Verbal":              Path("scoring/item_banks/aptitude_verbal.json"),
+    "Spatial":             Path("scoring/item_banks/aptitude_spatial.json"),
 }
 
 _item_banks: dict = {}
@@ -76,9 +77,11 @@ def _inject_attention_checks(items: List[dict], checks: List[dict], rng: random.
 
 
 def create_session(db: Session, user_id: uuid.UUID, context_of_origin: str) -> AssessmentSession:
+    flow_type = "b2b" if context_of_origin in B2B_CONTEXTS else "b2c"
     session = AssessmentSession(
         user_id=user_id,
         context_of_origin=context_of_origin,
+        flow_type=flow_type,
         status="started",
         scoring_engine_version="1.0",
     )
@@ -171,7 +174,8 @@ def get_question_batch(
             item_id=item["item_id"],
             text=item["text"],
             domain=domain,
-            subscale=item.get("subscale"),
+            # RIASEC: subscale field; OCEAN: trait field; Aptitude: neither
+            subscale=item.get("subscale") or item.get("trait"),
             options=item.get("options"),
             is_reverse_keyed=item.get("reverse_keyed", False),
             time_limit_seconds=APTITUDE_TIME_LIMITS.get(domain),

@@ -1,0 +1,95 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import client from '../api/client';
+
+const STATUS_COLORS = {
+  started: '#ff9800',
+  riasec_done: '#2196f3',
+  bigfive_done: '#2196f3',
+  aptitude_done: '#2196f3',
+  complete: '#4caf50',
+  failed: '#e53935',
+};
+
+export default function Dashboard() {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    client.get('/sessions').then(({ data }) => setSessions(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function startNew() {
+    const { data } = await client.post('/sessions', { context_of_origin: 'standalone-public' });
+    navigate(`/intake/${data.id}`);
+  }
+
+  function resume(session) {
+    if (session.status === 'complete') {
+      navigate(`/report/${session.id}`);
+    } else {
+      navigate(`/assessment/${session.id}`);
+    }
+  }
+
+  return (
+    <div style={styles.container}>
+      <header style={styles.header}>
+        <h1 style={styles.logo}>MindScope</h1>
+        <button style={styles.logoutBtn} onClick={() => { sessionStorage.clear(); navigate('/login'); }}>
+          Logout
+        </button>
+      </header>
+
+      <main style={styles.main}>
+        <div style={styles.topRow}>
+          <h2>Your Assessments</h2>
+          <button style={styles.startBtn} onClick={startNew}>+ Start New Assessment</button>
+        </div>
+
+        {loading && <p>Loading...</p>}
+
+        {!loading && sessions.length === 0 && (
+          <div style={styles.empty}>
+            <p>No assessments yet. Start your first one!</p>
+          </div>
+        )}
+
+        <div style={styles.grid}>
+          {sessions.map((s) => (
+            <div key={s.id} style={styles.card}>
+              <div style={{ ...styles.badge, background: STATUS_COLORS[s.status] || '#999' }}>
+                {s.status.replace('_', ' ')}
+              </div>
+              <p style={styles.date}>{new Date(s.started_at).toLocaleDateString()}</p>
+              <p style={styles.context}>{s.context_of_origin}</p>
+              <button style={styles.resumeBtn} onClick={() => resume(s)}>
+                {s.status === 'complete' ? 'View Report' : 'Resume'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+const styles = {
+  container: { minHeight: '100vh', background: '#f5f5f5' },
+  header: { background: '#1a1a2e', color: '#fff', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  logo: { margin: 0, fontSize: '1.5rem' },
+  logoutBtn: { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer' },
+  main: { maxWidth: '900px', margin: '0 auto', padding: '32px 16px' },
+  topRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
+  startBtn: { background: '#4285f4', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' },
+  empty: { textAlign: 'center', color: '#999', padding: '48px' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' },
+  card: { background: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
+  badge: { display: 'inline-block', color: '#fff', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', marginBottom: '8px' },
+  date: { color: '#999', fontSize: '0.85rem', margin: '4px 0' },
+  context: { color: '#555', fontSize: '0.9rem', margin: '4px 0 12px' },
+  resumeBtn: { background: '#1a1a2e', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', width: '100%' },
+};

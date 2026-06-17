@@ -1,0 +1,191 @@
+{
+  "framework": "Aptitude",
+  "domain": "numerical",
+  "domain_label": "Numerical Reasoning",
+  "version": "draft-v1",
+  "item_type": "multiple_choice",
+  "time_limit_seconds": 900,
+  "instructions": "Choose the best answer for each question. You may use a basic calculator. You have 15 minutes to complete this section.",
+  "items": [
+    {
+      "item_id": "NM-01",
+      "text": "A product's price increases from ₹400 to ₹480. What is the percentage increase?",
+      "options": [
+        "15%",
+        "20%",
+        "25%",
+        "18%"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "NM-02",
+      "text": "If 3 workers complete a task in 12 days, how many days will 4 workers take (same rate)?",
+      "options": [
+        "8",
+        "9",
+        "10",
+        "16"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "NM-03",
+      "text": "What is 15% of 240?",
+      "options": [
+        "32",
+        "34",
+        "36",
+        "38"
+      ],
+      "correct_answer": 2,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "NM-04",
+      "text": "A train covers 360 km in 4 hours. What is its average speed in km/h?",
+      "options": [
+        "80",
+        "85",
+        "90",
+        "95"
+      ],
+      "correct_answer": 2,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "NM-05",
+      "text": "A company's revenue was ₹12 lakhs in Q1 and ₹15 lakhs in Q2. What is the quarter-on-quarter growth rate?",
+      "options": [
+        "20%",
+        "25%",
+        "30%",
+        "15%"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "NM-06",
+      "text": "A laptop originally priced at ₹60,000 is offered at 10% off, then an additional 5% off on the discounted price. What is the final price?",
+      "options": [
+        "₹50,000",
+        "₹51,000",
+        "₹51,300",
+        "₹51,500"
+      ],
+      "correct_answer": 2,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "NM-07",
+      "text": "₹5,000 is invested at 8% simple interest per annum. What is the total amount after 3 years?",
+      "options": [
+        "₹6,000",
+        "₹6,200",
+        "₹6,400",
+        "₹6,500"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "NM-08",
+      "text": "A pie chart shows: Marketing 25%, Engineering 35%, Sales 20%, Support 20%. If the total budget is ₹80 lakhs, how much goes to Engineering?",
+      "options": [
+        "₹24 lakhs",
+        "₹28 lakhs",
+        "₹30 lakhs",
+        "₹32 lakhs"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "NM-09",
+      "text": "The ratio of boys to girls in a class is 3:5. If there are 40 students in total, how many boys are there?",
+      "options": [
+        "12",
+        "15",
+        "18",
+        "24"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "NM-10",
+      "text": "A shopkeeper buys 50 items at ₹20 each and sells them at ₹28 each. What is the total profit percentage?",
+      "options": [
+        "30%",
+        "35%",
+        "40%",
+        "45%"
+      ],
+      "correct_answer": 2,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "NM-11",
+      "text": "Population of a city grows at 5% per year. If the current population is 2,00,000, what will it be after 2 years (compound growth)?",
+      "options": [
+        "2,10,000",
+        "2,20,000",
+        "2,20,500",
+        "2,21,000"
+      ],
+      "correct_answer": 2,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "NM-12",
+      "text": "A tank is filled by Pipe A in 6 hours and by Pipe B in 8 hours. If both pipes are opened simultaneously, how long to fill the tank?",
+      "options": [
+        "3 hours 12 minutes",
+        "3 hours 26 minutes",
+        "3 hours 36 minutes",
+        "4 hours"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "NM-13",
+      "text": "A bar chart shows quarterly sales: Q1=120, Q2=150, Q3=135, Q4=195. What is the average quarterly sale and which quarter deviated most from it?",
+      "options": [
+        "Avg 150, Q4 deviated most",
+        "Avg 150, Q1 deviated most",
+        "Avg 140, Q4 deviated most",
+        "Avg 145, Q4 deviated most"
+      ],
+      "correct_answer": 0,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "NM-14",
+      "text": "Two cars start from the same point travelling in opposite directions at 60 km/h and 80 km/h. After how many hours will they be 490 km apart?",
+      "options": [
+        "3.0",
+        "3.5",
+        "4.0",
+        "4.5"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "NM-15",
+      "text": "A company's profit tripled each year for 3 years starting from ₹1 lakh. The company paid 30% tax on profit each year. What is the total post-tax profit over 3 years?",
+      "options": [
+        "₹9.1 lakhs",
+        "₹27.3 lakhs",
+        "₹9.10 lakhs",
+        "₹6.37 lakhs"
+      ],
+      "correct_answer": 0,
+      "difficulty": "hard"
+    }
+  ]
+}

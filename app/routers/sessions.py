@@ -31,6 +31,15 @@ from app.services.report_service import run_scoring_pipeline
 router = APIRouter()
 
 
+@router.get("", response_model=list[SessionResponse])
+def list_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.models.session import AssessmentSession as AS
+    return db.query(AS).filter(AS.user_id == current_user.id).order_by(AS.started_at.desc()).all()
+
+
 @router.post("", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
 def create_assessment_session(
     body: SessionCreateRequest,
