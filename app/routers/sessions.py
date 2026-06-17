@@ -1,0 +1,138 @@
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.deps import get_current_user
+from app.db.session import get_db
+from app.models.user import User
+from app.schemas.session import (
+    IntakeFormRequest,
+    IntakeFormResponse,
+    QuestionBatchResponse,
+    ResponseSubmitRequest,
+    ResponseSubmitResponse,
+    SectionStatusResponse,
+    SessionCreateRequest,
+    SessionResponse,
+    VALID_CONTEXTS,
+    VALID_DOMAINS,
+)
+from app.services.session_service import (
+    create_session,
+    get_question_batch,
+    get_section_status,
+    get_session_or_404,
+    save_intake,
+    save_responses,
+)
+
+router = APIRouter()
+
+
+@router.post("", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
+def create_assessment_session(
+    body: SessionCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if body.context_of_origin not in VALID_CONTEXTS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"context_of_origin must be one of {sorted(VALID_CONTEXTS)}",
+        )
+    session = create_session(db, user_id=current_user.id, context_of_origin=body.context_of_origin)
+    return session
+
+
+@router.post("/{session_id}/intake", response_model=IntakeFormResponse)
+def submit_intake(
+    session_id: uuid.UUID,
+    body: IntakeFormRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    session = get_session_or_404(db, session_id, current_user.id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    intake = save_intake(db, session, body)
+    return intake
+
+
+@router.get("/{session_id}/questions", response_model=QuestionBatchResponse)
+def get_questions(
+    session_id: uuid.UUID,
+    domain: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if domain not in VALID_DOMAINS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"domain must be one of {sorted(VALID_DOMAINS)}",
+        )
+
+    session = get_session_or_404(db, session_id, current_user.id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    items, section_started_at, time_limit = get_question_batch(db, session, domain)
+    return QuestionBatchResponse(
+        session_id=session_id,
+        domain=domain,
+        section_started_at=section_started_at,
+        time_limit_seconds=time_limit,
+        items=items,
+    )
+
+
+@router.post("/{session_id}/responses", response_model=ResponseSubmitResponse)
+def submit_responses(
+    session_id: uuid.UUID,
+    body: ResponseSubmitRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if body.domain not in VALID_DOMAINS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"domain must be one of {sorted(VALID_DOMAINS)}",
+        )
+
+    session = get_session_or_404(db, session_id, current_user.id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    stored, timed_out = save_responses(db, session, body.domain, body.items)
+    return ResponseSubmitResponse(
+        session_id=session_id,
+        domain=body.domain,
+        items_stored=stored,
+        timed_out=timed_out,
+    )
+
+
+@router.get("/{session_id}/section-status", response_model=SectionStatusResponse)
+def section_status(
+    session_id: uuid.UUID,
+    domain: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if domain not in VALID_DOMAINS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"domain must be one of {sorted(VALID_DOMAINS)}",
+        )
+
+    session = get_session_or_404(db, session_id, current_user.id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    time_remaining, is_complete = get_section_status(db, session, domain)
+    return SectionStatusResponse(
+        session_id=session_id,
+        domain=domain,
+        time_remaining_seconds=time_remaining,
+        is_complete=is_complete,
+    )
