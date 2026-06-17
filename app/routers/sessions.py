@@ -76,10 +76,11 @@ def get_questions(
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
-    items, section_started_at, time_limit = get_question_batch(db, session, domain)
+    items, section_started_at, time_limit, persona = get_question_batch(db, session, domain)
     return QuestionBatchResponse(
         session_id=session_id,
         domain=domain,
+        persona=persona,
         section_started_at=section_started_at,
         time_limit_seconds=time_limit,
         items=items,

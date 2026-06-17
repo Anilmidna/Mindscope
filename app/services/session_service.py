@@ -15,6 +15,7 @@ from app.schemas.session import (
     IntakeFormRequest,
     QuestionItem,
     ResponseItem,
+    LIFE_STAGE_TO_PERSONA,
 )
 
 # Server-side time limits per aptitude domain (seconds)
@@ -27,28 +28,51 @@ APTITUDE_TIME_LIMITS = {
 
 TIMED_DOMAINS = set(APTITUDE_TIME_LIMITS.keys())
 
-# Item bank files — loaded once at startup
-_item_banks: dict = {}
-
 ITEM_BANK_PATHS = {
-    "RIASEC": Path("scoring/item_banks/riasec.json"),
-    "OCEAN": Path("scoring/item_banks/ocean.json"),
-    "Logical": Path("scoring/item_banks/aptitude_logical.json"),
-    "Numerical": Path("scoring/item_banks/aptitude_numerical.json"),
-    "Verbal": Path("scoring/item_banks/aptitude_verbal.json"),
-    "Spatial": Path("scoring/item_banks/aptitude_spatial.json"),
+    "RIASEC_student":     Path("scoring/item_banks/riasec_student.json"),
+    "RIASEC_professional": Path("scoring/item_banks/riasec_professional.json"),
+    "OCEAN":              Path("scoring/item_banks/ocean.json"),
+    "Logical":            Path("scoring/item_banks/aptitude_logical.json"),
+    "Numerical":          Path("scoring/item_banks/aptitude_numerical.json"),
+    "Verbal":             Path("scoring/item_banks/aptitude_verbal.json"),
+    "Spatial":            Path("scoring/item_banks/aptitude_spatial.json"),
 }
 
+_item_banks: dict = {}
 
-def _load_item_bank(domain: str) -> List[dict]:
-    if domain not in _item_banks:
-        path = ITEM_BANK_PATHS.get(domain)
+
+def _load_bank(key: str) -> dict:
+    if key not in _item_banks:
+        path = ITEM_BANK_PATHS.get(key)
         if path and path.exists():
             with open(path) as f:
-                _item_banks[domain] = json.load(f)
+                _item_banks[key] = json.load(f)
         else:
-            _item_banks[domain] = []
-    return _item_banks[domain]
+            _item_banks[key] = {"items": [], "attention_checks": []}
+    return _item_banks[key]
+
+
+def _get_persona_for_session(db: Session, session: AssessmentSession) -> str:
+    intake = db.query(IntakeForm).filter(IntakeForm.session_id == session.id).first()
+    if intake:
+        return intake.persona
+    return "student"  # safe default
+
+
+def _inject_attention_checks(items: List[dict], checks: List[dict], rng: random.Random) -> List[dict]:
+    """Insert attention check items at the positions hinted in the bank."""
+    result = list(items)
+    for check in checks:
+        hint = check.get("position_hint", "")
+        try:
+            # parse "insert around item 15-20" → pick midpoint
+            parts = hint.replace("insert around item ", "").split("-")
+            lo, hi = int(parts[0]), int(parts[1])
+            pos = rng.randint(lo - 1, min(hi - 1, len(result)))
+        except Exception:
+            pos = rng.randint(0, len(result))
+        result.insert(pos, {**check, "is_attention_check": True})
+    return result
 
 
 def create_session(db: Session, user_id: uuid.UUID, context_of_origin: str) -> AssessmentSession:
@@ -67,13 +91,29 @@ def create_session(db: Session, user_id: uuid.UUID, context_of_origin: str) -> A
 def save_intake(db: Session, session: AssessmentSession, data: IntakeFormRequest) -> IntakeForm:
     existing = db.query(IntakeForm).filter(IntakeForm.session_id == session.id).first()
     if existing:
-        for field, value in data.model_dump(exclude_none=True).items():
-            setattr(existing, field, value)
+        for field in ("life_stage", "persona", "domain", "specialization", "future_goals",
+                      "satisfaction", "challenges", "education_level", "preferred_work_style"):
+            val = getattr(data, field, None)
+            if field == "persona":
+                val = data.persona
+            if val is not None:
+                setattr(existing, field, val)
         db.commit()
         db.refresh(existing)
         return existing
 
-    intake = IntakeForm(session_id=session.id, **data.model_dump(exclude_none=True))
+    intake = IntakeForm(
+        session_id=session.id,
+        life_stage=data.life_stage,
+        persona=data.persona,
+        domain=data.domain,
+        specialization=data.specialization,
+        future_goals=data.future_goals,
+        satisfaction=data.satisfaction,
+        challenges=data.challenges,
+        education_level=data.education_level,
+        preferred_work_style=data.preferred_work_style,
+    )
     db.add(intake)
     db.commit()
     db.refresh(intake)
@@ -84,13 +124,27 @@ def get_question_batch(
     db: Session,
     session: AssessmentSession,
     domain: str,
-) -> tuple[List[QuestionItem], Optional[datetime], Optional[int]]:
-    items_raw = _load_item_bank(domain)
+) -> tuple[List[QuestionItem], Optional[datetime], Optional[int], Optional[str]]:
+    """Returns (items, section_started_at, time_limit_seconds, persona)."""
 
-    # Randomise order — use session id as seed for reproducibility per attempt
+    persona = None
+    if domain == "RIASEC":
+        persona = _get_persona_for_session(db, session)
+        bank = _load_bank(f"RIASEC_{persona}")
+    else:
+        bank = _load_bank(domain)
+
+    raw_items = bank.get("items", [])
+    attention_checks = bank.get("attention_checks", [])
+
+    # Reproducible shuffle per session+domain
     rng = random.Random(str(session.id) + domain)
-    shuffled = list(items_raw)
+    shuffled = list(raw_items)
     rng.shuffle(shuffled)
+
+    # Inject attention checks at hinted positions
+    if attention_checks:
+        shuffled = _inject_attention_checks(shuffled, attention_checks, rng)
 
     # Start server-side timer on first fetch for timed domains
     timer = None
@@ -117,15 +171,16 @@ def get_question_batch(
             item_id=item["item_id"],
             text=item["text"],
             domain=domain,
+            subscale=item.get("subscale"),
             options=item.get("options"),
-            is_reverse_keyed=item.get("reverse_keyed"),
+            is_reverse_keyed=item.get("reverse_keyed", False),
             time_limit_seconds=APTITUDE_TIME_LIMITS.get(domain),
         )
         for item in shuffled
     ]
 
     section_started_at = timer.started_at if timer else None
-    return questions, section_started_at, time_limit
+    return questions, section_started_at, time_limit, persona
 
 
 def save_responses(
@@ -134,9 +189,6 @@ def save_responses(
     domain: str,
     items: List[ResponseItem],
 ) -> tuple[int, bool]:
-    """Store responses. Returns (count_stored, timed_out).
-    For timed domains, items submitted after the deadline are still stored but timed_out=True is flagged.
-    """
     timed_out = False
 
     if domain in TIMED_DOMAINS:
@@ -151,11 +203,11 @@ def save_responses(
 
     stored = 0
     for item in items:
-        existing = db.query(Response).filter(
+        exists = db.query(Response).filter(
             Response.session_id == session.id,
             Response.item_id == item.item_id,
         ).first()
-        if existing:
+        if exists:
             continue
         resp = Response(
             session_id=session.id,
@@ -176,7 +228,6 @@ def get_section_status(
     session: AssessmentSession,
     domain: str,
 ) -> tuple[Optional[int], bool]:
-    """Returns (time_remaining_seconds, is_complete). time_remaining_seconds is None for untimed domains."""
     if domain not in TIMED_DOMAINS:
         return None, False
 
@@ -192,9 +243,8 @@ def get_section_status(
     return remaining, remaining == 0
 
 
-def get_session_or_404(db: Session, session_id: uuid.UUID, user_id: uuid.UUID) -> AssessmentSession:
-    session = db.query(AssessmentSession).filter(
+def get_session_or_404(db: Session, session_id: uuid.UUID, user_id: uuid.UUID) -> Optional[AssessmentSession]:
+    return db.query(AssessmentSession).filter(
         AssessmentSession.id == session_id,
         AssessmentSession.user_id == user_id,
     ).first()
-    return session

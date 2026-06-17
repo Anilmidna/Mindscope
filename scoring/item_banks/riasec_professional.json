@@ -1,0 +1,324 @@
+{
+  "persona": "professional",
+  "persona_label": "Working Professional",
+  "framework": "RIASEC",
+  "version": "draft-v1",
+  "scale": "likert-5",
+  "scale_labels": {
+    "1": "Strongly Disagree",
+    "2": "Disagree",
+    "3": "Neutral",
+    "4": "Agree",
+    "5": "Strongly Agree"
+  },
+  "items": [
+    {
+      "item_id": "P-R01",
+      "text": "I prefer roles where I work with physical tools, equipment, or hardware rather than just screens.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R02",
+      "text": "I enjoy troubleshooting technical issues hands-on rather than delegating to support.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R03",
+      "text": "I'd take a role in field operations or site work over a purely desk-based position.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R04",
+      "text": "I like setting up infrastructure — servers, networks, lab environments — from scratch.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R05",
+      "text": "I find it satisfying to build or assemble something tangible at work.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R06",
+      "text": "I'd enjoy a job that requires me to be physically active rather than seated all day.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R07",
+      "text": "I prefer running deployments and configuring systems over writing documentation.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-R08",
+      "text": "I enjoy DIY projects, home improvement, or working with my hands outside of work.",
+      "subscale": "R",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I01",
+      "text": "I regularly read industry research, whitepapers, or technical blogs beyond what my job requires.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I02",
+      "text": "I'd rather investigate the root cause of a production issue than apply a known workaround.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I03",
+      "text": "I enjoy designing experiments or proofs-of-concept to test a hypothesis at work.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I04",
+      "text": "I'm drawn to roles that require analyzing complex data to extract insights.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I05",
+      "text": "I prefer understanding the full architecture of a system over working on just my assigned component.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I06",
+      "text": "I'd enjoy a role in R&D, analytics, or strategy over execution-heavy operations.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I07",
+      "text": "I find it stimulating when my work involves evaluating multiple competing approaches.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-I08",
+      "text": "I often question established processes and look for better ways to do things.",
+      "subscale": "I",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A01",
+      "text": "I enjoy creating presentations, pitch decks, or visual communications at work.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A02",
+      "text": "I often come up with creative solutions that aren't in the standard playbook.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A03",
+      "text": "I'd enjoy a role that involves content creation, branding, or design thinking.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A04",
+      "text": "I like customizing my workspace, tools, or workflows to reflect my personal style.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A05",
+      "text": "I prefer brainstorming sessions and ideation over following a fixed project plan.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A06",
+      "text": "I enjoy writing — reports, proposals, or even internal blogs — when I can bring my own voice to it.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A07",
+      "text": "I'm drawn to roles where innovation and original thinking are valued over following SOPs.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-A08",
+      "text": "I've created something outside work — a blog, art, music, a side project — that I'm proud of.",
+      "subscale": "A",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S01",
+      "text": "I enjoy mentoring junior colleagues or conducting knowledge-sharing sessions.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S02",
+      "text": "I'm usually the person people approach for advice on career or personal matters at work.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S03",
+      "text": "I'd rather work in a people-facing role (training, HR, customer success) than a purely technical one.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S04",
+      "text": "I find it fulfilling when my work directly improves someone else's experience or outcome.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S05",
+      "text": "I enjoy facilitating team discussions and ensuring everyone's voice is heard.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S06",
+      "text": "I'd be interested in a career shift toward teaching, coaching, or counseling.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S07",
+      "text": "I prefer resolving interpersonal conflicts on my team over ignoring them.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-S08",
+      "text": "I feel most engaged at work when I'm helping others grow or succeed.",
+      "subscale": "S",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E01",
+      "text": "I naturally take ownership of projects and drive them forward without being asked.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E02",
+      "text": "I enjoy pitching ideas to stakeholders, clients, or leadership.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E03",
+      "text": "I've seriously considered starting my own business or consultancy.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E04",
+      "text": "I'm energized by negotiations, deals, or competitive situations at work.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E05",
+      "text": "I'd enjoy a role where my compensation is tied to my ability to bring in business or close deals.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E06",
+      "text": "I prefer managing teams or projects over being an individual contributor.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E07",
+      "text": "I enjoy networking — conferences, LinkedIn, industry events — and building professional relationships.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-E08",
+      "text": "I'm comfortable making high-stakes decisions with incomplete information.",
+      "subscale": "E",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C01",
+      "text": "I keep my tasks, emails, and files systematically organized.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C02",
+      "text": "I prefer clear SOPs and defined processes over ad-hoc ways of working.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C03",
+      "text": "I enjoy tasks that require precision — financial reporting, auditing, compliance checks.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C04",
+      "text": "I find it satisfying to create templates, checklists, or documentation that others can follow.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C05",
+      "text": "I'm comfortable in roles that require adherence to regulations, policies, or standards.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C06",
+      "text": "I'd rather have a predictable, structured workday than one that's constantly shifting.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C07",
+      "text": "I enjoy maintaining dashboards, tracking metrics, or managing inventories.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "P-C08",
+      "text": "I take pride in delivering error-free, well-formatted work.",
+      "subscale": "C",
+      "scoring_direction": "positive"
+    }
+  ],
+  "attention_checks": [
+    {
+      "item_id": "P-ATT01",
+      "text": "Please select 'Agree' for this statement.",
+      "expected_answer": 4,
+      "position_hint": "insert around item 15-20"
+    },
+    {
+      "item_id": "P-ATT02",
+      "text": "I have never used a computer or smartphone for any work task.",
+      "expected_answer_range": [1, 2],
+      "position_hint": "insert around item 30-35"
+    },
+    {
+      "item_id": "P-ATT03",
+      "text": "I am currently answering questions in an online assessment.",
+      "expected_answer_range": [4, 5],
+      "position_hint": "insert around item 40-45"
+    }
+  ]
+}

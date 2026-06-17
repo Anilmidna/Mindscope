@@ -10,15 +10,19 @@ class IntakeForm(Base):
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_id = Column(Uuid(as_uuid=True), ForeignKey("sessions.id"), unique=True, nullable=False)
-    life_stage = Column(String(100), nullable=True)
-    current_role = Column(String(200), nullable=True)
-    current_field = Column(String(200), nullable=True)
-    satisfaction_rating = Column(Integer, nullable=True)
-    goals = Column(Text, nullable=True)
-    challenges = Column(Text, nullable=True)
-    background_tags = Column(String(500), nullable=True)
-    years_of_experience = Column(String(50), nullable=True)
-    highest_education = Column(String(100), nullable=True)
+
+    # Determines RIASEC bank: "student" or "professional"
+    life_stage = Column(String(100), nullable=False)
+    persona = Column(String(20), nullable=False)  # "student" | "professional"
+
+    domain = Column(String(200), nullable=True)          # field of study/work
+    specialization = Column(String(100), nullable=True)  # free text job title / major
+    future_goals = Column(Text, nullable=True)           # capped 200 chars
+    satisfaction = Column(Integer, nullable=True)        # 1-10 slider
+    challenges = Column(Text, nullable=True)             # capped 200 chars
+    education_level = Column(String(100), nullable=True)
+    preferred_work_style = Column(String(100), nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     session = relationship("AssessmentSession", back_populates="intake")
