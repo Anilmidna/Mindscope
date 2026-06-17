@@ -14,6 +14,7 @@ class User(Base):
     name = Column(String(255), nullable=True)
     life_stage = Column(String(100), nullable=True)
     context_of_origin = Column(String(50), nullable=True)
+    account_type = Column(String(20), nullable=False, default="b2c")  # b2c | b2b
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

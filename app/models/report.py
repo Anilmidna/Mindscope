@@ -16,6 +16,7 @@ class Report(Base):
     generated_at = Column(DateTime(timezone=True), nullable=True)
     template_name = Column(String(100), nullable=True)
     status = Column(String(20), nullable=False, default="queued")
+    raw_llm_json = Column(Text, nullable=True)  # stores raw Bedrock JSON for audit/replay
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     session = relationship("AssessmentSession")
