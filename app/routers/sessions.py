@@ -1,9 +1,10 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
 from app.db.session import get_db
+from app.models.report import Report
 from app.models.user import User
 from app.schemas.session import (
     IntakeFormRequest,
@@ -25,6 +26,7 @@ from app.services.session_service import (
     save_intake,
     save_responses,
 )
+from app.services.report_service import run_scoring_pipeline
 
 router = APIRouter()
 
@@ -54,7 +56,6 @@ def submit_intake(
     session = get_session_or_404(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
-
     intake = save_intake(db, session, body)
     return intake
 
@@ -71,7 +72,6 @@ def get_questions(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"domain must be one of {sorted(VALID_DOMAINS)}",
         )
-
     session = get_session_or_404(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
@@ -99,7 +99,6 @@ def submit_responses(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"domain must be one of {sorted(VALID_DOMAINS)}",
         )
-
     session = get_session_or_404(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
@@ -125,7 +124,6 @@ def section_status(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"domain must be one of {sorted(VALID_DOMAINS)}",
         )
-
     session = get_session_or_404(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
@@ -137,3 +135,26 @@ def section_status(
         time_remaining_seconds=time_remaining,
         is_complete=is_complete,
     )
+
+
+@router.post("/{session_id}/complete", status_code=status.HTTP_202_ACCEPTED)
+def complete_session(
+    session_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mark session complete and trigger scoring + Bedrock report generation.
+    Returns immediately (202) — poll /reports/{session_id}/status for result.
+    """
+    session = get_session_or_404(db, session_id, current_user.id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+    if session.status == "complete":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Session already complete")
+
+    # Queue pipeline in background — response returns immediately
+    background_tasks.add_task(run_scoring_pipeline, db, session)
+
+    return {"session_id": str(session_id), "status": "queued", "message": "Scoring and report generation started. Poll /reports/{session_id}/status for updates."}

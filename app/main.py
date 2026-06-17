@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import auth, sessions
+from app.routers import auth, sessions, reports, admin
 
 app = FastAPI(
     title="MindScope API",
@@ -20,6 +20,8 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(sessions.router, prefix="/sessions", tags=["sessions"])
+app.include_router(reports.router, prefix="/reports", tags=["reports"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 
 @app.get("/ping")
