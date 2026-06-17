@@ -1,0 +1,396 @@
+{
+  "framework": "OCEAN",
+  "framework_label": "Big Five Personality (OCEAN)",
+  "version": "draft-v1",
+  "scale": "likert-5",
+  "scale_labels": {
+    "1": "Strongly Disagree",
+    "2": "Disagree",
+    "3": "Neutral",
+    "4": "Agree",
+    "5": "Strongly Agree"
+  },
+  "norms_reference": "BFI-2-S published norms (Soto & John, 2017)",
+  "items": [
+    {
+      "item_id": "O-01",
+      "text": "I enjoy exploring new ideas even if they have no practical application.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "O-02",
+      "text": "I find beauty in things that others might not notice.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "O-03",
+      "text": "I like to think about abstract concepts and theories.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "O-04",
+      "text": "I prefer sticking to tried-and-tested methods rather than experimenting.",
+      "trait": "O",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "O-05",
+      "text": "I enjoy visiting art galleries, museums, or cultural exhibitions.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "O-06",
+      "text": "I have little interest in creative or artistic pursuits.",
+      "trait": "O",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "O-07",
+      "text": "I get curious about topics outside my usual area of expertise.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "O-08",
+      "text": "I enjoy reading about philosophical or scientific ideas.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "O-09",
+      "text": "I find routine and predictability comforting rather than boring.",
+      "trait": "O",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "O-10",
+      "text": "I like imagining unconventional solutions to problems.",
+      "trait": "O",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-01",
+      "text": "I keep my workspace organised and tidy.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-02",
+      "text": "I follow through on my commitments even when it gets difficult.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-03",
+      "text": "I tend to procrastinate on important tasks.",
+      "trait": "C",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "C-04",
+      "text": "I set clear goals and work systematically toward them.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-05",
+      "text": "I am careful and thorough in my work.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-06",
+      "text": "I sometimes leave things half-finished when I lose interest.",
+      "trait": "C",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "C-07",
+      "text": "I plan ahead rather than acting on impulse.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-08",
+      "text": "I find it easy to stay disciplined when working toward a deadline.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "C-09",
+      "text": "I often forget or overlook small but important details.",
+      "trait": "C",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "C-10",
+      "text": "I hold myself to high standards in everything I do.",
+      "trait": "C",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-01",
+      "text": "I feel energised after spending time in a group of people.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-02",
+      "text": "I find it easy to start conversations with strangers.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-03",
+      "text": "I prefer spending evenings quietly at home rather than going out.",
+      "trait": "E",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "E-04",
+      "text": "I enjoy being the centre of attention in social situations.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-05",
+      "text": "I am usually the one to organise social get-togethers.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-06",
+      "text": "I tend to keep my thoughts to myself in group discussions.",
+      "trait": "E",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "E-07",
+      "text": "I feel comfortable speaking up in meetings or classes.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-08",
+      "text": "I would describe myself as talkative and outgoing.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "E-09",
+      "text": "I find large gatherings draining rather than exciting.",
+      "trait": "E",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "E-10",
+      "text": "I enjoy collaborating with others more than working alone.",
+      "trait": "E",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-01",
+      "text": "I go out of my way to help others even when it is inconvenient.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-02",
+      "text": "I try to see things from other people's perspective before judging.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-03",
+      "text": "I can be blunt to the point where others feel hurt.",
+      "trait": "A",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "A-04",
+      "text": "I believe most people have good intentions.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-05",
+      "text": "I find it natural to cooperate rather than compete with colleagues.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-06",
+      "text": "I sometimes prioritise winning an argument over keeping the peace.",
+      "trait": "A",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "A-07",
+      "text": "I am patient with people who are slower to understand things.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-08",
+      "text": "I prefer resolving conflicts through compromise rather than confrontation.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "A-09",
+      "text": "I tend to be suspicious of other people's motives.",
+      "trait": "A",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "A-10",
+      "text": "I make an effort to be polite and considerate in all interactions.",
+      "trait": "A",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-01",
+      "text": "I often worry about things that might go wrong.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-02",
+      "text": "I get stressed easily when facing multiple deadlines.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-03",
+      "text": "I stay calm under pressure even in high-stakes situations.",
+      "trait": "N",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "N-04",
+      "text": "I tend to dwell on mistakes long after they have happened.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-05",
+      "text": "My mood can shift quickly in response to small setbacks.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-06",
+      "text": "I rarely feel anxious or nervous.",
+      "trait": "N",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "N-07",
+      "text": "I find it hard to relax when there are unresolved problems.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-08",
+      "text": "I sometimes feel overwhelmed by my emotions.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "N-09",
+      "text": "I bounce back quickly from disappointments.",
+      "trait": "N",
+      "reverse_keyed": true,
+      "scoring_direction": "negative"
+    },
+    {
+      "item_id": "N-10",
+      "text": "I feel self-conscious about how others perceive me.",
+      "trait": "N",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "SD-01",
+      "text": "I have never told even a small lie.",
+      "trait": "SD",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "SD-02",
+      "text": "I have never felt jealous of anyone.",
+      "trait": "SD",
+      "reverse_keyed": false,
+      "scoring_direction": "positive"
+    },
+    {
+      "item_id": "ATT-O1",
+      "text": "Please select 'Agree' for this statement.",
+      "trait": "ATT",
+      "reverse_keyed": false,
+      "scoring_direction": "positive",
+      "expected_response": 4
+    },
+    {
+      "item_id": "ATT-O2",
+      "text": "Please select 'Strongly Disagree' for this statement.",
+      "trait": "ATT",
+      "reverse_keyed": false,
+      "scoring_direction": "positive",
+      "expected_response": 1
+    }
+  ]
+}

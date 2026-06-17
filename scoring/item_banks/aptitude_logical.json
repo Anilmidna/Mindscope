@@ -1,0 +1,191 @@
+{
+  "framework": "Aptitude",
+  "domain": "logical",
+  "domain_label": "Logical Reasoning",
+  "version": "draft-v1",
+  "item_type": "multiple_choice",
+  "time_limit_seconds": 900,
+  "instructions": "Choose the best answer for each question. You have 15 minutes to complete this section.",
+  "items": [
+    {
+      "item_id": "LG-01",
+      "text": "All managers attend the leadership workshop. Priya is a manager. What can be concluded?",
+      "options": [
+        "Priya may attend the workshop",
+        "Priya attends the leadership workshop",
+        "Only managers attend the workshop",
+        "Priya organises the workshop"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "LG-02",
+      "text": "If it rains, the outdoor event is cancelled. The outdoor event was not cancelled. What can you conclude?",
+      "options": [
+        "It rained",
+        "It did not rain",
+        "The event was moved indoors",
+        "Nothing can be concluded"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "LG-03",
+      "text": "Which number comes next in the series: 2, 6, 18, 54, ___?",
+      "options": [
+        "108",
+        "162",
+        "148",
+        "216"
+      ],
+      "correct_answer": 1,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "LG-04",
+      "text": "A is taller than B. C is shorter than B. D is taller than A. Who is the shortest?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "correct_answer": 2,
+      "difficulty": "easy"
+    },
+    {
+      "item_id": "LG-05",
+      "text": "Statement: 'No scientists are politicians. Some politicians are lawyers.' Which conclusion follows?",
+      "options": [
+        "No scientists are lawyers",
+        "Some lawyers are not scientists",
+        "All lawyers are politicians",
+        "Some scientists are lawyers"
+      ],
+      "correct_answer": 1,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "LG-06",
+      "text": "In a code language, CLOUD is written as DMPVE. How is STORM written?",
+      "options": [
+        "TUSPS",
+        "TUPSN",
+        "TUPSO",
+        "TUOSN"
+      ],
+      "correct_answer": 0,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "LG-07",
+      "text": "Five friends sit in a row. M is to the left of N but to the right of O. P is to the right of N. Q is at the left end. What is the order from left to right?",
+      "options": [
+        "Q, O, M, N, P",
+        "Q, M, O, N, P",
+        "O, Q, M, N, P",
+        "Q, O, N, M, P"
+      ],
+      "correct_answer": 0,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "LG-08",
+      "text": "If 'APPLE' = 50 and 'BANANA' = 42, what does 'CHERRY' = ? (A=1, B=2, ... Z=26)",
+      "options": [
+        "62",
+        "64",
+        "66",
+        "68"
+      ],
+      "correct_answer": 2,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "LG-09",
+      "text": "A cube is painted red on all faces and then cut into 27 equal smaller cubes. How many smaller cubes have exactly two faces painted?",
+      "options": [
+        "6",
+        "8",
+        "12",
+        "10"
+      ],
+      "correct_answer": 2,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "LG-10",
+      "text": "Pointing to a man, a woman says: 'His mother is the only daughter of my mother.' How is the woman related to the man?",
+      "options": [
+        "Mother",
+        "Sister",
+        "Grandmother",
+        "Aunt"
+      ],
+      "correct_answer": 0,
+      "difficulty": "medium"
+    },
+    {
+      "item_id": "LG-11",
+      "text": "If P → Q and Q → R are true, and R is false, which must be true?",
+      "options": [
+        "P is true",
+        "Q is true",
+        "P is false",
+        "Q may or may not be true"
+      ],
+      "correct_answer": 2,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "LG-12",
+      "text": "A farmer has chickens and cows. There are 30 heads and 80 legs total. How many chickens are there?",
+      "options": [
+        "10",
+        "15",
+        "20",
+        "25"
+      ],
+      "correct_answer": 2,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "LG-13",
+      "text": "Which figure completes the pattern? In a 3×3 grid, each row has a circle, a triangle, and a square. Each row has red, blue, and green. Row 3 has a green circle and a red triangle. What is the missing shape and colour?",
+      "options": [
+        "Blue square",
+        "Green triangle",
+        "Red square",
+        "Blue circle"
+      ],
+      "correct_answer": 0,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "LG-14",
+      "text": "Three switches outside a room each control one of three bulbs inside. You can enter the room only once. How do you determine which switch controls which bulb?",
+      "options": [
+        "Turn all switches on and off quickly, then check brightness",
+        "Turn switch 1 on for 5 minutes, turn it off, turn switch 2 on, then enter and check heat and light",
+        "You cannot determine this with only one entry",
+        "Turn switches on one at a time and peek through the keyhole"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    },
+    {
+      "item_id": "LG-15",
+      "text": "In a tournament, every team plays every other team exactly once. If there are 8 teams, how many matches are played in total?",
+      "options": [
+        "56",
+        "28",
+        "36",
+        "64"
+      ],
+      "correct_answer": 1,
+      "difficulty": "hard"
+    }
+  ]
+}

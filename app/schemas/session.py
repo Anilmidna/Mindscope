@@ -3,7 +3,10 @@ from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
 
-VALID_CONTEXTS = {"standalone-public", "DATE-college", "training-program"}
+VALID_CONTEXTS = {"standalone-public", "DATE-college", "training-program", "b2b-partner"}
+
+# B2B contexts skip payment gate
+B2B_CONTEXTS = {"DATE-college", "training-program", "b2b-partner"}
 VALID_DOMAINS = {"RIASEC", "OCEAN", "Logical", "Numerical", "Verbal", "Spatial"}
 
 # From persona_intake.json maps_to_persona
