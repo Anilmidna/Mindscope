@@ -14,12 +14,14 @@ from app.schemas.session import (
     ResponseSubmitResponse,
     SectionStatusResponse,
     SessionCreateRequest,
+    SessionDetailResponse,
     SessionResponse,
     VALID_CONTEXTS,
     VALID_DOMAINS,
 )
 from app.services.session_service import (
     create_session,
+    get_completed_domains,
     get_question_batch,
     get_section_status,
     get_session_or_404,
@@ -53,6 +55,28 @@ def create_assessment_session(
         )
     session = create_session(db, user_id=current_user.id, context_of_origin=body.context_of_origin)
     return session
+
+
+@router.get("/{session_id}", response_model=SessionDetailResponse)
+def get_session(
+    session_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    session = get_session_or_404(db, session_id, current_user.id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+    completed_domains = get_completed_domains(db, session_id)
+    return SessionDetailResponse(
+        id=session.id,
+        user_id=session.user_id,
+        context_of_origin=session.context_of_origin,
+        flow_type=session.flow_type,
+        status=session.status,
+        started_at=session.started_at,
+        completed_at=session.completed_at,
+        completed_domains=completed_domains,
+    )
 
 
 @router.post("/{session_id}/intake", response_model=IntakeFormResponse)

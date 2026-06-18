@@ -114,3 +114,17 @@ class SectionStatusResponse(BaseModel):
     domain: str
     time_remaining_seconds: Optional[int]
     is_complete: bool
+
+
+class SessionDetailResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    context_of_origin: str
+    flow_type: str
+    status: str
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    completed_domains: List[str]
+
+    class Config:
+        from_attributes = True

@@ -1,16 +1,31 @@
 """
 Report generation pipeline.
 
-Flow: responses in DB → score → build profile → Bedrock (llm_service) → store report record
-PDF generation is Week 2 — this sprint delivers the JSON report and stores it.
+Flow:
+  responses in DB
+  → score (RIASEC + OCEAN + Aptitude)
+  → build profile
+  → Bedrock (llm_service) → report JSON
+  → PDF (WeasyPrint via pdf_service)
+  → S3 upload
+  → SES email with pre-signed download link
 """
+import io
 import json
+import logging
 from datetime import datetime, timezone
 from typing import Optional
 
+import boto3
+from botocore.exceptions import ClientError
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.llm import llm_service, BEDROCK_MODELS, PROMPT_TEMPLATE_VERSION
+from app.services.email_service import send_report_ready_email
+from app.services.pdf_service import generate_pdf, scores_from_db_row
+
+logger = logging.getLogger(__name__)
 from app.models.bias_flag import BiasFlag
 from app.models.intake import IntakeForm
 from app.models.report import Report
@@ -44,6 +59,38 @@ def _flag_response_time_outliers(responses: list[dict]) -> bool:
     return len(fast) / len(timed) > 0.20
 
 
+def _upload_pdf_to_s3(pdf_bytes: bytes, user_id, session_id) -> Optional[str]:
+    """Upload PDF to S3, return the S3 key. Returns None and logs on failure."""
+    key = f"reports/{user_id}/{session_id}.pdf"
+    try:
+        s3 = boto3.client("s3", region_name=settings.AWS_REGION)
+        s3.put_object(
+            Bucket=settings.S3_BUCKET_NAME,
+            Key=key,
+            Body=pdf_bytes,
+            ContentType="application/pdf",
+        )
+        logger.info("PDF uploaded to s3://%s/%s", settings.S3_BUCKET_NAME, key)
+        return key
+    except ClientError as e:
+        logger.warning("S3 upload failed for %s: %s", key, e.response["Error"]["Message"])
+        return None
+
+
+def _make_presigned_url(s3_key: str, expires: int = 3600) -> Optional[str]:
+    """Generate a pre-signed GET URL for an S3 object. Returns None on failure."""
+    try:
+        s3 = boto3.client("s3", region_name=settings.AWS_REGION)
+        return s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.S3_BUCKET_NAME, "Key": s3_key},
+            ExpiresIn=expires,
+        )
+    except ClientError as e:
+        logger.warning("Pre-signed URL failed for %s: %s", s3_key, e.response["Error"]["Message"])
+        return None
+
+
 def run_scoring_pipeline(
     db: Session,
     session: AssessmentSession,
@@ -52,10 +99,14 @@ def run_scoring_pipeline(
     """
     Full pipeline:
     1. Load responses from DB
-    2. Score RIASEC + OCEAN
-    3. Build structured profile
-    4. Call Bedrock via llm_service
-    5. Persist Score + BiasFlag + Report records
+    2. Score RIASEC + OCEAN + Aptitude
+    3. Persist scores + bias flags
+    4. Build structured profile
+    5. Call Bedrock → report JSON
+    6. Persist report record
+    7. Generate PDF (WeasyPrint)
+    8. Upload PDF to S3
+    9. Send SES email with pre-signed download link
     Returns the Report ORM object.
     """
     # ── Mark report as generating ─────────────────────────────────────────
@@ -161,7 +212,7 @@ def run_scoring_pipeline(
             model=model_override,
         )
 
-        # ── 7. Persist report ──────────────────────────────────────────────
+        # ── 7. Persist report JSON ─────────────────────────────────────────
         used_model = model_override or llm_service._defaults["report_generation"]
         report.raw_llm_json = json.dumps(llm_json)
         report.prompt_template_version = PROMPT_TEMPLATE_VERSION
@@ -174,8 +225,43 @@ def run_scoring_pipeline(
         session.status = "complete"
         session.completed_at = datetime.now(timezone.utc)
         session.persona_tag = intake_dict.get("persona")
-
         db.commit()
+
+        # ── 8. Generate PDF + upload to S3 ────────────────────────────────
+        user_row = session.user
+        user_info = {
+            "name": user_row.name or "",
+            "email": user_row.email or "",
+        }
+        chart_scores = scores_from_db_row(score_row)
+
+        try:
+            pdf_bytes = generate_pdf(
+                report_json=llm_json,
+                scores=chart_scores,
+                user=user_info,
+                session_id=str(session.id),
+                context_of_origin=session.context_of_origin,
+            )
+            s3_key = _upload_pdf_to_s3(pdf_bytes, session.user_id, session.id)
+            if s3_key:
+                report.s3_url = s3_key
+                db.commit()
+        except Exception as pdf_err:
+            # PDF failure is non-fatal — JSON report is still available
+            logger.warning("PDF generation failed for session %s: %s", session.id, pdf_err)
+            s3_key = None
+
+        # ── 9. Send SES email ──────────────────────────────────────────────
+        if s3_key:
+            presigned_url = _make_presigned_url(s3_key)
+            if presigned_url:
+                send_report_ready_email(
+                    to_email=user_info["email"],
+                    user_name=user_info["name"],
+                    download_url=presigned_url,
+                )
+
         db.refresh(report)
         return report
 
