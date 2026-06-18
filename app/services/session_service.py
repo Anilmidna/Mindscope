@@ -252,3 +252,9 @@ def get_session_or_404(db: Session, session_id: uuid.UUID, user_id: uuid.UUID) -
         AssessmentSession.id == session_id,
         AssessmentSession.user_id == user_id,
     ).first()
+
+
+def get_completed_domains(db: Session, session_id: uuid.UUID) -> List[str]:
+    """Return distinct domains that have at least one saved response."""
+    rows = db.query(Response.domain).filter(Response.session_id == session_id).distinct().all()
+    return [r.domain for r in rows]

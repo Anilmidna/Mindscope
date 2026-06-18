@@ -5,6 +5,7 @@ import Intake from './pages/Intake';
 import Assessment from './pages/Assessment';
 import Report from './pages/Report';
 import Invite from './pages/Invite';
+import NotFound from './pages/NotFound';
 
 function ProtectedRoute({ children }) {
   const token = sessionStorage.getItem('access_token');
@@ -22,7 +23,7 @@ export default function App() {
         <Route path="/intake/:sessionId" element={<ProtectedRoute><Intake /></ProtectedRoute>} />
         <Route path="/assessment/:sessionId" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
         <Route path="/report/:sessionId" element={<ProtectedRoute><Report /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

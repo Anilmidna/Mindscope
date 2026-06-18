@@ -9,27 +9,52 @@ const LIKERT = ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly A
 export default function Assessment() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
-  const [sectionIdx, setSectionIdx] = useState(0);
+  const [sectionIdx, setSectionIdx] = useState(null); // null = loading resume state
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [attentionFailed, setAttentionFailed] = useState(false);
   const startTimes = useRef({});
   const timerRef = useRef(null);
 
-  const domain = SECTIONS[sectionIdx];
-
+  // On mount: determine which section to resume from
   useEffect(() => {
+    async function resolveStartSection() {
+      try {
+        const { data } = await client.get(`/sessions/${sessionId}`);
+        // If session is already complete, jump straight to report
+        if (data.status === 'complete' || data.status === 'report_ready') {
+          navigate(`/report/${sessionId}`, { replace: true });
+          return;
+        }
+        const completedSet = new Set(data.completed_domains || []);
+        const resumeIdx = SECTIONS.findIndex((s) => !completedSet.has(s));
+        setSectionIdx(resumeIdx === -1 ? 0 : resumeIdx);
+      } catch {
+        // Can't determine resume point — start from beginning
+        setSectionIdx(0);
+      }
+    }
+    resolveStartSection();
+  }, [sessionId]);
+
+  // Load questions whenever sectionIdx is set/changed
+  useEffect(() => {
+    if (sectionIdx === null) return;
     loadSection();
     return () => clearInterval(timerRef.current);
   }, [sectionIdx]);
 
   async function loadSection() {
     setLoading(true);
+    setLoadError('');
     setAnswers({});
     try {
+      const domain = SECTIONS[sectionIdx];
       const { data } = await client.get(`/sessions/${sessionId}/questions`, { params: { domain } });
       setQuestions(data.items);
       if (data.time_limit_seconds) {
@@ -44,8 +69,8 @@ export default function Assessment() {
         setTimeLeft(null);
         clearInterval(timerRef.current);
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setLoadError('Failed to load questions. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -59,6 +84,9 @@ export default function Assessment() {
   async function handleSubmit(forced = false) {
     clearInterval(timerRef.current);
     setSubmitting(true);
+    setSubmitError('');
+
+    const domain = SECTIONS[sectionIdx];
 
     // Check attention items
     const attItems = questions.filter((q) => q.item_id.startsWith('ATT') || q.item_id.startsWith('S-ATT') || q.item_id.startsWith('P-ATT'));
@@ -80,25 +108,50 @@ export default function Assessment() {
       response_time_ms: startTimes.current[q.item_id] ? Date.now() - startTimes.current[q.item_id] : null,
     }));
 
-    await client.post(`/sessions/${sessionId}/responses`, { domain, items });
+    try {
+      await client.post(`/sessions/${sessionId}/responses`, { domain, items });
+    } catch {
+      setSubmitError('Failed to save responses. Please try again.');
+      setSubmitting(false);
+      return;
+    }
     startTimes.current = {};
 
     if (sectionIdx < SECTIONS.length - 1) {
       setSectionIdx((i) => i + 1);
     } else {
-      await client.post(`/sessions/${sessionId}/complete`);
-      navigate(`/report/${sessionId}`);
+      try {
+        await client.post(`/sessions/${sessionId}/complete`);
+        navigate(`/report/${sessionId}`);
+      } catch {
+        setSubmitError('Failed to complete assessment. Please try again.');
+      }
     }
     setSubmitting(false);
   }
 
+  const domain = sectionIdx !== null ? SECTIONS[sectionIdx] : '';
   const answered = Object.keys(answers).filter((k) => !k.startsWith('ATT')).length;
   const required = questions.filter((q) => !q.item_id.startsWith('ATT')).length;
   const canSubmit = answered >= required;
-
   const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
+  // Still resolving resume state
+  if (sectionIdx === null) return <div style={styles.center}>Loading assessment...</div>;
+
   if (loading) return <div style={styles.center}>Loading questions...</div>;
+
+  if (loadError) {
+    return (
+      <div style={styles.center}>
+        <div style={styles.errorCard}>
+          <h3>Could not load questions</h3>
+          <p>{loadError}</p>
+          <button style={styles.retryBtn} onClick={loadSection}>Try Again</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -119,7 +172,11 @@ export default function Assessment() {
         <p style={styles.count}>{answered} / {required} answered</p>
 
         {attentionFailed && (
-          <div style={styles.warning}>⚠️ Some attention-check questions were not answered as expected. Please read carefully.</div>
+          <div style={styles.warning}>Some attention-check questions were not answered as expected. Please read carefully.</div>
+        )}
+
+        {submitError && (
+          <div style={styles.errorBanner}>{submitError}</div>
         )}
 
         {questions.map((q) => (
@@ -163,6 +220,8 @@ export default function Assessment() {
 const styles = {
   container: { minHeight: '100vh', background: '#f5f5f5' },
   center: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' },
+  errorCard: { background: '#fff', borderRadius: '12px', padding: '32px', textAlign: 'center', maxWidth: '400px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
+  retryBtn: { background: '#4285f4', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '6px', cursor: 'pointer', marginTop: '12px', fontSize: '0.95rem' },
   header: { background: '#1a1a2e', color: '#fff', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '16px', position: 'sticky', top: 0, zIndex: 10 },
   logo: { fontWeight: 700, fontSize: '1.1rem', marginRight: 'auto' },
   progress: { display: 'flex', gap: '6px', alignItems: 'center' },
@@ -172,6 +231,7 @@ const styles = {
   sectionTitle: { fontSize: '1.4rem', color: '#1a1a2e', marginBottom: '4px' },
   count: { color: '#999', marginBottom: '20px', fontSize: '0.9rem' },
   warning: { background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '6px', padding: '12px', marginBottom: '16px', color: '#e65100' },
+  errorBanner: { background: '#fff3f3', border: '1px solid #ffcdd2', color: '#c62828', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' },
   card: { background: '#fff', borderRadius: '10px', padding: '20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
   qText: { fontWeight: 500, marginBottom: '14px', lineHeight: 1.5 },
   likert: { display: 'flex', flexWrap: 'wrap', gap: '8px' },

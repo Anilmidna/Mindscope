@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from weasyprint import HTML, CSS
 
 from app.services.charts import (
     generate_aptitude_bars,
@@ -93,6 +92,7 @@ def generate_pdf(
     )
 
     # ── WeasyPrint render ─────────────────────────────────────────────────────
+    from weasyprint import HTML, CSS  # lazy import — GTK not available on Windows dev
     css_path = STATIC_DIR / "report.css"
     extra_css = [CSS(filename=str(css_path))] if css_path.exists() else []
 
