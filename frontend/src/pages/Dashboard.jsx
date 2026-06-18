@@ -3,32 +3,60 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 
 const STATUS_COLORS = {
-  started: '#ff9800',
-  riasec_done: '#2196f3',
-  bigfive_done: '#2196f3',
+  started:       '#ff9800',
+  intake_done:   '#ff9800',
+  riasec_done:   '#2196f3',
+  bigfive_done:  '#2196f3',
   aptitude_done: '#2196f3',
-  complete: '#4caf50',
-  failed: '#e53935',
+  complete:      '#9c27b0',
+  scored:        '#9c27b0',
+  report_ready:  '#4caf50',
+  failed:        '#e53935',
 };
+
+const STATUS_LABELS = {
+  started:       'Started',
+  intake_done:   'Intake done',
+  riasec_done:   'In progress',
+  bigfive_done:  'In progress',
+  aptitude_done: 'In progress',
+  complete:      'Scoring...',
+  scored:        'Generating report...',
+  report_ready:  'Report ready',
+  failed:        'Failed',
+};
+
+const REPORT_STATUSES = new Set(['complete', 'scored', 'report_ready']);
+const IN_PROGRESS_STATUSES = new Set(['started', 'intake_done', 'riasec_done', 'bigfive_done', 'aptitude_done']);
 
 export default function Dashboard() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    client.get('/sessions').then(({ data }) => setSessions(data))
-      .catch(() => {})
+    client.get('/sessions')
+      .then(({ data }) => setSessions(data))
+      .catch(() => setError('Could not load sessions. Please refresh.'))
       .finally(() => setLoading(false));
   }, []);
 
   async function startNew() {
-    const { data } = await client.post('/sessions', { context_of_origin: 'standalone-public' });
-    navigate(`/intake/${data.id}`);
+    setStarting(true);
+    setError('');
+    try {
+      const { data } = await client.post('/sessions', { context_of_origin: 'standalone-public' });
+      navigate(`/intake/${data.id}`);
+    } catch {
+      setError('Could not start a new assessment. Please try again.');
+      setStarting(false);
+    }
   }
 
   function resume(session) {
-    if (session.status === 'complete') {
+    if (REPORT_STATUSES.has(session.status)) {
       navigate(`/report/${session.id}`);
     } else {
       navigate(`/assessment/${session.id}`);
@@ -47,9 +75,12 @@ export default function Dashboard() {
       <main style={styles.main}>
         <div style={styles.topRow}>
           <h2>Your Assessments</h2>
-          <button style={styles.startBtn} onClick={startNew}>+ Start New Assessment</button>
+          <button style={styles.startBtn} onClick={startNew} disabled={starting}>
+            {starting ? 'Starting...' : '+ Start New Assessment'}
+          </button>
         </div>
 
+        {error && <div style={styles.errorBanner}>{error}</div>}
         {loading && <p>Loading...</p>}
 
         {!loading && sessions.length === 0 && (
@@ -62,13 +93,18 @@ export default function Dashboard() {
           {sessions.map((s) => (
             <div key={s.id} style={styles.card}>
               <div style={{ ...styles.badge, background: STATUS_COLORS[s.status] || '#999' }}>
-                {s.status.replace('_', ' ')}
+                {STATUS_LABELS[s.status] || s.status}
               </div>
               <p style={styles.date}>{new Date(s.started_at).toLocaleDateString()}</p>
               <p style={styles.context}>{s.context_of_origin}</p>
-              <button style={styles.resumeBtn} onClick={() => resume(s)}>
-                {s.status === 'complete' ? 'View Report' : 'Resume'}
-              </button>
+              {s.status !== 'failed' && (
+                <button style={styles.resumeBtn} onClick={() => resume(s)}>
+                  {REPORT_STATUSES.has(s.status) ? 'View Report' : 'Resume'}
+                </button>
+              )}
+              {s.status === 'report_ready' && (
+                <p style={styles.emailNote}>Report sent to your email</p>
+              )}
             </div>
           ))}
         </div>
@@ -92,4 +128,6 @@ const styles = {
   date: { color: '#999', fontSize: '0.85rem', margin: '4px 0' },
   context: { color: '#555', fontSize: '0.9rem', margin: '4px 0 12px' },
   resumeBtn: { background: '#1a1a2e', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', width: '100%' },
+  errorBanner: { background: '#fff3f3', border: '1px solid #ffcdd2', color: '#c62828', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' },
+  emailNote: { color: '#4caf50', fontSize: '0.8rem', marginTop: '6px', textAlign: 'center' },
 };
