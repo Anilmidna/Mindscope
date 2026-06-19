@@ -34,18 +34,20 @@ async def exchange_google_code(code: str, code_verifier: str, redirect_uri: str)
                 "code_verifier": code_verifier,
             },
         )
-        response.raise_for_status()
+        if not response.is_success:
+            raise ValueError(f"Google token endpoint returned {response.status_code}: {response.text}")
         token_data = response.json()
 
     id_token = token_data.get("id_token")
     if not id_token:
-        raise ValueError("No id_token in Google response")
+        raise ValueError(f"No id_token in Google response. Got keys: {list(token_data.keys())}. Error: {token_data.get('error')}, {token_data.get('error_description')}")
 
-    claims = await _verify_google_id_token(id_token)
+    access_token = token_data.get("access_token")
+    claims = await _verify_google_id_token(id_token, access_token)
     return claims
 
 
-async def _verify_google_id_token(id_token: str) -> dict:
+async def _verify_google_id_token(id_token: str, access_token: str | None = None) -> dict:
     """Verify Google ID token signature, iss, aud, and exp."""
     async with httpx.AsyncClient() as client:
         certs_response = await client.get(GOOGLE_CERTS_URL)
@@ -59,6 +61,8 @@ async def _verify_google_id_token(id_token: str) -> dict:
             algorithms=["RS256"],
             audience=settings.GOOGLE_CLIENT_ID,
             issuer=GOOGLE_ISSUER,
+            # at_hash requires the access_token to verify; pass it when present
+            access_token=access_token,
         )
     except JWTError as e:
         raise ValueError(f"Invalid Google ID token: {e}")

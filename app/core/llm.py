@@ -24,6 +24,7 @@ from typing import Optional
 from langchain_aws import ChatBedrockConverse
 from langchain_core.messages import SystemMessage, HumanMessage
 import json
+from app.core.config import settings
 
 
 # ── Bedrock Model Registry ───────────────────────────────────────────────────
@@ -33,8 +34,9 @@ import json
 
 BEDROCK_MODELS = {
     # Claude 4 family (cross-region inference profiles — verified working)
-    "opus":       "us.anthropic.claude-opus-4-7",
-    "sonnet":     "us.anthropic.claude-sonnet-4-6",
+    # opus falls back to sonnet until Bedrock model access is granted for Opus 4.7
+    "opus":       settings.BEDROCK_OPUS_MODEL_ID,
+    "sonnet":     settings.BEDROCK_MODEL_ID,
     "haiku":      "us.anthropic.claude-haiku-4-5-20251001-v1:0",
 
     # Claude 3.5 fallbacks

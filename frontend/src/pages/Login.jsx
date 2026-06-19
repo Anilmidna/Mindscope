@@ -27,6 +27,7 @@ export default function Login() {
     if (!code) return;
 
     const verifier = sessionStorage.getItem('pkce_verifier');
+    if (!verifier) return; // StrictMode double-fire guard — verifier already consumed
     sessionStorage.removeItem('pkce_verifier');
 
     client.post('/auth/google/callback', {
@@ -44,7 +45,8 @@ export default function Login() {
       } else {
         navigate('/dashboard');
       }
-    }).catch(() => {
+    }).catch((err) => {
+      console.error('Auth failed:', err?.response?.status, JSON.stringify(err?.response?.data));
       navigate('/login?error=auth_failed');
     });
   }, [params]);

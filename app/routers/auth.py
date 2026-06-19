@@ -35,9 +35,11 @@ async def google_callback(body: GoogleCallbackRequest, db: Session = Depends(get
     try:
         claims = await exchange_google_code(body.code, body.code_verifier, redirect_uri)
     except ValueError as e:
+        logger.warning("Google token validation failed: %s", str(e))
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Failed to contact Google")
+    except Exception as e:
+        logger.error("Google token exchange failed: %s", str(e), exc_info=True)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Google error: {str(e)}")
 
     google_sub = claims.get("sub")
     email = claims.get("email")
