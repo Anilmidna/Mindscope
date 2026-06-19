@@ -32,6 +32,7 @@ export default function Intake() {
     life_stage: '', education_level: '', domain: '', specialization: '',
     future_goals: '', satisfaction: 5, challenges: '', preferred_work_style: '',
   });
+  const [consentGiven, setConsentGiven] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -43,10 +44,17 @@ export default function Intake() {
       setError('Please fill in all required fields.');
       return;
     }
+    if (!consentGiven) {
+      setError('Please accept the data processing consent to continue.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
-      await client.post(`/sessions/${sessionId}/intake`, form);
+      await client.post(`/sessions/${sessionId}/intake`, {
+        ...form,
+        consent_given_at: new Date().toISOString(),
+      });
       navigate(`/assessment/${sessionId}`);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to save. Please try again.');
@@ -114,7 +122,24 @@ export default function Intake() {
             </select>
           </Field>
 
-          <button type="submit" style={styles.btn} disabled={saving}>
+          <label style={styles.consentLabel}>
+            <input
+              type="checkbox"
+              checked={consentGiven}
+              onChange={(e) => setConsentGiven(e.target.checked)}
+              style={{ marginRight: '10px', marginTop: '2px', flexShrink: 0 }}
+            />
+            <span>
+              I consent to MindScope collecting and processing my assessment responses and personal information
+              to generate my career report. My data will be stored securely and used only for this purpose,
+              in accordance with the{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#4285f4' }}>
+                Privacy Policy
+              </a>.
+            </span>
+          </label>
+
+          <button type="submit" style={{ ...styles.btn, opacity: consentGiven ? 1 : 0.5 }} disabled={saving || !consentGiven}>
             {saving ? 'Saving...' : 'Start Assessment →'}
           </button>
         </form>
@@ -142,4 +167,5 @@ const styles = {
   error: { color: '#e53935', marginBottom: '16px', fontSize: '0.9rem' },
   sliderLabels: { display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#999', marginTop: '4px' },
   charCount: { color: '#999', fontSize: '0.75rem' },
+  consentLabel: { display: 'flex', alignItems: 'flex-start', gap: '4px', fontSize: '0.82rem', color: '#555', lineHeight: 1.5, marginBottom: '20px', cursor: 'pointer' },
 };

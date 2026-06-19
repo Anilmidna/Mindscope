@@ -1,0 +1,40 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BedrockInference",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-opus-4-*",
+        "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-*",
+        "arn:aws:bedrock:us-east-1:868859238853:inference-profile/us.anthropic.claude-opus-4-*",
+        "arn:aws:bedrock:us-east-1:868859238853:inference-profile/us.anthropic.claude-sonnet-4-*"
+      ]
+    },
+    {
+      "Sid": "S3Reports",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::mindscope-reports/*"
+    },
+    {
+      "Sid": "SESEmail",
+      "Effect": "Allow",
+      "Action": "ses:SendEmail",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "ses:FromAddress": "reports@mindscope.ai"
+        }
+      }
+    }
+  ]
+}

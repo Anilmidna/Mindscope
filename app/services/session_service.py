@@ -1,9 +1,12 @@
 import json
+import logging
 import random
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy.orm import Session
 
@@ -88,6 +91,11 @@ def create_session(db: Session, user_id: uuid.UUID, context_of_origin: str) -> A
     db.add(session)
     db.commit()
     db.refresh(session)
+    logger.info(
+        "Session created",
+        extra={"session_id": str(session.id), "user_id": str(user_id),
+               "context_of_origin": context_of_origin, "flow_type": flow_type},
+    )
     return session
 
 
@@ -95,7 +103,8 @@ def save_intake(db: Session, session: AssessmentSession, data: IntakeFormRequest
     existing = db.query(IntakeForm).filter(IntakeForm.session_id == session.id).first()
     if existing:
         for field in ("life_stage", "persona", "domain", "specialization", "future_goals",
-                      "satisfaction", "challenges", "education_level", "preferred_work_style"):
+                      "satisfaction", "challenges", "education_level", "preferred_work_style",
+                      "consent_given_at"):
             val = getattr(data, field, None)
             if field == "persona":
                 val = data.persona
@@ -116,6 +125,7 @@ def save_intake(db: Session, session: AssessmentSession, data: IntakeFormRequest
         challenges=data.challenges,
         education_level=data.education_level,
         preferred_work_style=data.preferred_work_style,
+        consent_given_at=data.consent_given_at,
     )
     db.add(intake)
     db.commit()

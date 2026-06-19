@@ -5,9 +5,21 @@ POST /b2b/generate-invites — regenerate invite code for an org
 GET  /b2b/validate-invite  — validate invite code, return org info
 POST /b2b/activate-invite  — activate invite for logged-in user, tag as B2B
 """
+import logging
 import secrets
 import uuid
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
+
+
+def _is_expired(expires_at: datetime) -> bool:
+    """Compare expires_at against now — handles both aware and naive datetimes."""
+    now = datetime.now(timezone.utc)
+    if expires_at.tzinfo is None:
+        # SQLite returns naive datetimes; treat as UTC
+        return expires_at < now.replace(tzinfo=None)
+    return expires_at < now
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -104,7 +116,7 @@ def validate_invite(
         raise HTTPException(status_code=404, detail="Invalid invite code")
     if not org.is_active:
         raise HTTPException(status_code=410, detail="This invite link is no longer active")
-    if org.expires_at and org.expires_at < datetime.now(timezone.utc):
+    if org.expires_at and _is_expired(org.expires_at):
         raise HTTPException(status_code=410, detail="This invite link has expired")
     if org.used_licenses >= org.total_licenses:
         raise HTTPException(status_code=409, detail="All licenses for this organisation have been used")
@@ -129,7 +141,7 @@ def activate_invite(
         raise HTTPException(status_code=404, detail="Invalid invite code")
     if not org.is_active:
         raise HTTPException(status_code=410, detail="Invite link is no longer active")
-    if org.expires_at and org.expires_at < datetime.now(timezone.utc):
+    if org.expires_at and _is_expired(org.expires_at):
         raise HTTPException(status_code=410, detail="Invite link has expired")
     if org.used_licenses >= org.total_licenses:
         raise HTTPException(status_code=409, detail="All licenses have been used")

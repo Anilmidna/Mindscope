@@ -1,0 +1,50 @@
+{
+  "family": "mindscope-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::868859238853:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::868859238853:role/mindscope-task-role",
+  "containerDefinitions": [
+    {
+      "name": "mindscope-api",
+      "image": "868859238853.dkr.ecr.us-east-1.amazonaws.com/mindscope-api:latest",
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        { "name": "APP_ENV",        "value": "production" },
+        { "name": "AWS_REGION",     "value": "us-east-1" },
+        { "name": "S3_BUCKET_NAME", "value": "mindscope-reports" },
+        { "name": "SES_FROM_EMAIL", "value": "reports@mindscope.ai" }
+      ],
+      "secrets": [
+        { "name": "DATABASE_URL",         "valueFrom": "arn:aws:secretsmanager:us-east-1:868859238853:secret:mindscope/database-url" },
+        { "name": "JWT_SECRET_KEY",        "valueFrom": "arn:aws:secretsmanager:us-east-1:868859238853:secret:mindscope/jwt-secret" },
+        { "name": "GOOGLE_CLIENT_ID",      "valueFrom": "arn:aws:secretsmanager:us-east-1:868859238853:secret:mindscope/google-oauth:client_id::" },
+        { "name": "GOOGLE_CLIENT_SECRET",  "valueFrom": "arn:aws:secretsmanager:us-east-1:868859238853:secret:mindscope/google-oauth:client_secret::" },
+        { "name": "GOOGLE_REDIRECT_URI",   "valueFrom": "arn:aws:secretsmanager:us-east-1:868859238853:secret:mindscope/google-oauth:redirect_uri::" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/mindscope/api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8000/ping || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

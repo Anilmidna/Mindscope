@@ -23,6 +23,8 @@ class IntakeForm(Base):
     education_level = Column(String(100), nullable=True)
     preferred_work_style = Column(String(100), nullable=True)
 
+    consent_given_at = Column(DateTime(timezone=True), nullable=False)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     session = relationship("AssessmentSession", back_populates="intake")

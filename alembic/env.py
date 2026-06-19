@@ -4,7 +4,16 @@ from alembic import context
 
 from app.db.session import Base
 from app.core.config import settings
-import app.models  # noqa: F401 — ensures all models are registered
+import app.models  # noqa: F401
+import app.models.b2b  # noqa: F401
+import app.models.session  # noqa: F401
+import app.models.intake  # noqa: F401
+import app.models.response  # noqa: F401
+import app.models.score  # noqa: F401
+import app.models.report  # noqa: F401
+import app.models.bias_flag  # noqa: F401
+import app.models.section_timer  # noqa: F401
+import app.models.norm_group  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

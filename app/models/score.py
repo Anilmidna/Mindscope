@@ -1,6 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Float, Uuid, ForeignKey, DateTime, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, String, Float, Uuid, ForeignKey, DateTime, JSON, func
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -30,7 +29,7 @@ class Score(Base):
     apt_verbal = Column(Float, nullable=True)
     apt_spatial = Column(Float, nullable=True)
 
-    percentiles = Column(JSONB, nullable=True)
+    percentiles = Column(JSON, nullable=True)
     scoring_engine_version = Column(String(20), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

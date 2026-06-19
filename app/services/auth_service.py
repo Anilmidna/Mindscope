@@ -1,6 +1,9 @@
 import hashlib
+import logging
 
 import httpx
+
+logger = logging.getLogger(__name__)
 from jose import jwt as jose_jwt, JWTError
 from sqlalchemy.orm import Session
 
@@ -66,6 +69,7 @@ async def _verify_google_id_token(id_token: str) -> dict:
 def upsert_user(db: Session, google_sub: str, email: str, name: str | None) -> User:
     """Insert or update user record by google_sub."""
     user = db.query(User).filter(User.google_sub == google_sub).first()
+    is_new = user is None
     if user is None:
         user = User(google_sub=google_sub, email=email, name=name)
         db.add(user)
@@ -75,6 +79,7 @@ def upsert_user(db: Session, google_sub: str, email: str, name: str | None) -> U
             user.name = name
     db.commit()
     db.refresh(user)
+    logger.info("User login", extra={"user_id": str(user.id), "is_new_user": is_new})
     return user
 
 

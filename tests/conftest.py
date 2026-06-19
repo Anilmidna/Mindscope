@@ -21,6 +21,14 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 @pytest.fixture(autouse=True)
 def reset_db():
     import app.models  # noqa: F401 — registers User + RefreshTokenBlocklist with Base
+    import app.models.b2b  # noqa: F401
+    import app.models.session  # noqa: F401
+    import app.models.intake  # noqa: F401
+    import app.models.response  # noqa: F401
+    import app.models.score  # noqa: F401
+    import app.models.report  # noqa: F401
+    import app.models.bias_flag  # noqa: F401
+    import app.models.section_timer  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)

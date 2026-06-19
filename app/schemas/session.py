@@ -46,6 +46,7 @@ class IntakeFormRequest(BaseModel):
     challenges: Optional[str] = Field(None, max_length=200)
     education_level: Optional[str] = Field(None, max_length=100)
     preferred_work_style: Optional[str] = Field(None, max_length=100)
+    consent_given_at: datetime = Field(..., description="DPDP: timestamp when user accepted data processing consent")
 
     @model_validator(mode="after")
     def validate_life_stage(self):
@@ -67,6 +68,7 @@ class IntakeFormResponse(BaseModel):
     future_goals: Optional[str]
     satisfaction: Optional[int]
     challenges: Optional[str]
+    consent_given_at: datetime
 
     class Config:
         from_attributes = True

@@ -6,13 +6,13 @@ An AI-powered psychometric assessment platform combining scientifically validate
 
 - **Backend:** FastAPI (Python)
 - **Database:** PostgreSQL (Amazon RDS)
-- **AI:** Claude Sonnet via Amazon Bedrock
+- **AI:** Claude Opus (reports) + Sonnet (corrections) via Amazon Bedrock
 - **PDF:** WeasyPrint + Jinja2
 - **Storage:** Amazon S3
 - **Email:** Amazon SES
 - **Auth:** Google OAuth 2.0 + JWT
-- **Hosting:** AWS App Runner
-- **Frontend:** React / HTML + Tailwind
+- **Hosting:** AWS ECS (Fargate) + ECR
+- **Frontend:** React (Vite) — deployed on Vercel
 
 ## Project Structure
 
@@ -69,3 +69,79 @@ uvicorn app.main:app --reload
 ## Environment Variables
 
 See `.env.example` for all required variables.
+
+## Deployment
+
+### Backend — AWS ECS (Fargate)
+
+CI/CD is fully automated via GitHub Actions (`.github/workflows/deploy.yml`).
+
+**One-time AWS setup (do once before first deploy):**
+
+```bash
+# 1. Create ECR repository
+aws ecr create-repository --repository-name mindscope-api --region us-east-1
+
+# 2. Create ECS cluster
+aws ecs create-cluster --cluster-name mindscope --region us-east-1
+
+# 3. Create CloudWatch log groups
+aws logs create-log-group --log-group-name /mindscope/api --region us-east-1
+aws logs create-log-group --log-group-name /mindscope/bedrock --region us-east-1
+
+# 4. Store secrets in Secrets Manager
+aws secretsmanager create-secret --name mindscope/database-url \
+  --secret-string "postgresql://user:pass@<rds-endpoint>:5432/mindscope"
+aws secretsmanager create-secret --name mindscope/jwt-secret \
+  --secret-string "$(openssl rand -base64 48)"
+aws secretsmanager create-secret --name mindscope/google-oauth \
+  --secret-string '{"client_id":"...","client_secret":"...","redirect_uri":"https://<your-domain>/auth/google/callback"}'
+
+# 5. Register task definition
+aws ecs register-task-definition --cli-input-json file://infra/ecs-task-definition.json
+
+# 6. Create ECS service (ALB wiring done separately in console or via CDK)
+aws ecs create-service \
+  --cluster mindscope \
+  --service-name mindscope-api \
+  --task-definition mindscope-api \
+  --desired-count 1 \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={subnets=[<subnet-id>],securityGroups=[<sg-id>],assignPublicIp=ENABLED}"
+```
+
+**GitHub Actions deploy (automatic on push to `main`):**
+- Runs tests → builds Docker image → pushes to ECR → updates ECS service
+- Requires GitHub secret `AWS_ROLE_ARN` = `arn:aws:iam::868859238853:role/mindscope-github-actions`
+
+**Run migrations manually (first time or after schema changes):**
+```bash
+# Exec into a running container, or run a one-off ECS task
+alembic upgrade head
+```
+
+### Frontend — Vercel
+
+```bash
+cd frontend
+# Install Vercel CLI once
+npm i -g vercel
+
+# Deploy (first time — follow prompts)
+vercel --prod
+
+# Set environment variable in Vercel dashboard:
+# VITE_API_URL = https://<your-ecs-alb-or-domain>
+```
+
+### IAM Roles Required
+
+| Role | Purpose |
+|---|---|
+| `ecsTaskExecutionRole` | Pull ECR images, read Secrets Manager, write CloudWatch logs |
+| `mindscope-task-role` | Call Bedrock, read/write S3, send SES email |
+| `mindscope-github-actions` | GitHub OIDC role — push ECR, register task definition, update ECS service |
+
+## API Reference
+
+Run `python scripts/export_openapi.py` to regenerate `openapi.json`. The live interactive docs are at `<api-url>/docs` (Swagger UI) and `<api-url>/redoc`.

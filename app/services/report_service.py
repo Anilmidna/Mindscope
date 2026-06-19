@@ -117,6 +117,8 @@ def run_scoring_pipeline(
     else:
         report.status = "generating"
     db.commit()
+    logger.info("Scoring pipeline started", extra={"session_id": str(session.id),
+                                                    "user_id": str(session.user_id)})
 
     try:
         # ── 1. Load responses ──────────────────────────────────────────────
@@ -226,6 +228,10 @@ def run_scoring_pipeline(
         session.completed_at = datetime.now(timezone.utc)
         session.persona_tag = intake_dict.get("persona")
         db.commit()
+        logger.info("Report generated", extra={"session_id": str(session.id),
+                                               "user_id": str(session.user_id),
+                                               "model": report.llm_model,
+                                               "stage": "report_generation"})
 
         # ── 8. Generate PDF + upload to S3 ────────────────────────────────
         user_row = session.user

@@ -1,6 +1,9 @@
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+
+logger = logging.getLogger(__name__)
 from jose import JWTError
 from sqlalchemy.orm import Session
 

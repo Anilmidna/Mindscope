@@ -32,7 +32,13 @@ class Settings(BaseSettings):
 
     # App
     APP_ENV: str = "development"
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    # Comma-separated list: "https://app.vercel.app,http://localhost:5173"
+    # Stored as str so pydantic-settings doesn't try to JSON-decode it.
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+
+    @property
+    def cors_origins_list(self) -> List[str]:
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
     class Config:
         env_file = ".env"

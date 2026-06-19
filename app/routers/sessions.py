@@ -1,9 +1,12 @@
+import logging
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
-from app.db.session import get_db
+from app.db.session import get_db, SessionLocal
 from app.models.report import Report
 from app.models.user import User
 from app.schemas.session import (
@@ -31,6 +34,21 @@ from app.services.session_service import (
 from app.services.report_service import run_scoring_pipeline
 
 router = APIRouter()
+
+
+def _run_scoring_in_background(session_id: uuid.UUID) -> None:
+    """Background task wrapper — creates its own DB session so it outlives the request."""
+    from app.models.session import AssessmentSession
+    db = SessionLocal()
+    try:
+        session = db.query(AssessmentSession).filter(AssessmentSession.id == session_id).first()
+        if session:
+            run_scoring_pipeline(db, session)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 
 @router.get("", response_model=list[SessionResponse])
@@ -188,6 +206,7 @@ def complete_session(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Session already complete")
 
     # Queue pipeline in background — response returns immediately
-    background_tasks.add_task(run_scoring_pipeline, db, session)
+    # Pass session_id (not the ORM object) so the task creates its own DB session
+    background_tasks.add_task(_run_scoring_in_background, session.id)
 
     return {"session_id": str(session_id), "status": "queued", "message": "Scoring and report generation started. Poll /reports/{session_id}/status for updates."}
