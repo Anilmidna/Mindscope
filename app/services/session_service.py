@@ -49,7 +49,7 @@ def _load_bank(key: str) -> dict:
     if key not in _item_banks:
         path = ITEM_BANK_PATHS.get(key)
         if path and path.exists():
-            with open(path) as f:
+            with open(path, encoding='utf-8') as f:
                 _item_banks[key] = json.load(f)
         else:
             _item_banks[key] = {"items": [], "attention_checks": []}
