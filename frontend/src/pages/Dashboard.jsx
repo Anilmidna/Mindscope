@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
+import Footer from '../components/Footer';
 
 const STATUS_COLORS = {
   started:       '#ff9800',
@@ -109,6 +110,7 @@ export default function Dashboard() {
           ))}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

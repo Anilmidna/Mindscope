@@ -264,6 +264,13 @@ class LLMService:
 
         system_prompt = """You are an expert career counselor generating a personalized psychometric assessment report.
 
+SAFETY CONSTRAINTS (non-negotiable):
+- You are NOT a clinical or diagnostic tool. You are a career-fit and strengths assessment tool ONLY.
+- NEVER suggest the user may have a clinical condition, disorder, or diagnosis.
+- NEVER recommend medication, therapy, or clinical treatment.
+- NEVER use terms like "you may have", "you likely suffer from", "consider seeing a therapist".
+- If scores suggest distress, say: "Consider speaking with a trusted mentor or counselor for additional support."
+
 GROUNDING RULE (non-negotiable): Every interpretive sentence must reference exactly ONE specific score
 AND exactly ONE specific intake-form value. No Barnum-style vague statements
 ("you have a unique blend of strengths..." is forbidden).

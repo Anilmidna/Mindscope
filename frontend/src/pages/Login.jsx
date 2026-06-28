@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
+import Footer from '../components/Footer';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/login';
@@ -72,23 +73,27 @@ export default function Login() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>MindScope</h1>
-        <p style={styles.subtitle}>AI-Powered Psychometric Assessment</p>
-        {error && <p style={styles.error}>Authentication failed. Please try again.</p>}
-        <button style={styles.button} onClick={handleGoogleLogin}>
-          Sign in with Google
-        </button>
-        <p style={styles.disclaimer}>
-          By continuing, you agree to our data processing terms in accordance with India's DPDP Act.
-        </p>
+      <div style={styles.centered}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>MindScope</h1>
+          <p style={styles.subtitle}>AI-Powered Psychometric Assessment</p>
+          {error && <p style={styles.error}>Authentication failed. Please try again.</p>}
+          <button style={styles.button} onClick={handleGoogleLogin}>
+            Sign in with Google
+          </button>
+          <p style={styles.disclaimer}>
+            By continuing, you agree to our data processing terms in accordance with India's DPDP Act.
+          </p>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }
 
 const styles = {
-  container: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' },
+  container: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' },
+  centered: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' },
   card: { background: '#fff', padding: '48px', borderRadius: '12px', boxShadow: '0 4px 24px rgba(0,0,0,0.1)', textAlign: 'center', maxWidth: '400px', width: '100%' },
   title: { margin: 0, fontSize: '2rem', color: '#1a1a2e' },
   subtitle: { color: '#666', marginBottom: '32px' },
