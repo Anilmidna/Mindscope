@@ -150,6 +150,49 @@ class LLMService:
         self._cb_failure_count = 0
         self._cb_first_failure_at = 0.0
 
+    def _invoke_and_log(self, chat, messages, stage: str, model: str):
+        """Invoke chat model, log latency + token usage (TDD §8.5 L6), handle circuit breaker."""
+        self._cb_check()
+        t0 = time.time()
+        try:
+            response = chat.invoke(messages)
+            self._cb_record_success()
+        except Exception as e:
+            self._cb_record_failure()
+            raise e
+        latency_ms = int((time.time() - t0) * 1000)
+
+        usage = getattr(response, "response_metadata", {}).get("usage", {})
+        input_tokens = usage.get("input_tokens", 0)
+        output_tokens = usage.get("output_tokens", 0)
+
+        # Guardrail block detection: LangChain surfaces this in response_metadata
+        guardrail_action = getattr(response, "response_metadata", {}).get(
+            "amazon-bedrock-guardrailAction", ""
+        )
+        if guardrail_action == "INTERVENED":
+            _cb_logger.warning(
+                "guardrail_blocked",
+                extra={
+                    "stage": stage,
+                    "model": model,
+                    "guardrail_id": settings.BEDROCK_GUARDRAIL_ID,
+                    "action": "BLOCKED",
+                },
+            )
+
+        _cb_logger.info(
+            "bedrock_call",
+            extra={
+                "stage": stage,
+                "model": model,
+                "latency_ms": latency_ms,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+            },
+        )
+        return response
+
     # ── Public: Change defaults at runtime ───────────────────────────────────
 
     def set_default(self, stage: str, model: str,
@@ -257,17 +300,13 @@ Intake Form:
         if strict:
             human_prompt += "\n\nREMINDER: Do not include any clinical or diagnostic language. You are a career-fit tool only."
 
-        self._cb_check()
-        try:
-            response = chat.invoke([
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=human_prompt),
-            ])
-            self._cb_record_success()
-        except Exception as e:
-            self._cb_record_failure()
-            raise e
-
+        model_name = model or self._defaults.get(stage, "sonnet")
+        response = self._invoke_and_log(
+            chat,
+            [SystemMessage(content=system_prompt), HumanMessage(content=human_prompt)],
+            stage=stage,
+            model=model_name,
+        )
         return _parse_json_response(response.content)
 
     def correct_questions(
@@ -289,11 +328,13 @@ Check each item for:
 
 Output JSON array: [{item_id, status: "pass"|"flag", issues: [], suggested_rewrite: "..."}]"""
 
-        response = chat.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=json.dumps(items, indent=2)),
-        ])
-
+        model_name = model or self._defaults.get(stage, "sonnet")
+        response = self._invoke_and_log(
+            chat,
+            [SystemMessage(content=system_prompt), HumanMessage(content=json.dumps(items, indent=2))],
+            stage=stage,
+            model=model_name,
+        )
         return _parse_json_response(response.content)
 
     def generate_summary(
@@ -305,15 +346,20 @@ Output JSON array: [{item_id, status: "pass"|"flag", issues: [], suggested_rewri
         stage = "report_summary"
         chat = self._get_stage_model(stage, model)
 
-        response = chat.invoke([
-            SystemMessage(content=(
-                "Generate a 2-sentence career insight teaser from this RIASEC profile. "
-                "Be specific — reference the top RIASEC code and one aptitude or Big Five score. "
-                "No vague language."
-            )),
-            HumanMessage(content=json.dumps(profile, indent=2)),
-        ])
-
+        model_name = model or self._defaults.get(stage, "sonnet")
+        response = self._invoke_and_log(
+            chat,
+            [
+                SystemMessage(content=(
+                    "Generate a 2-sentence career insight teaser from this RIASEC profile. "
+                    "Be specific — reference the top RIASEC code and one aptitude or Big Five score. "
+                    "No vague language."
+                )),
+                HumanMessage(content=json.dumps(profile, indent=2)),
+            ],
+            stage=stage,
+            model=model_name,
+        )
         return response.content
 
     # ── Internal ──────────────────────────────────────────────────────────────
