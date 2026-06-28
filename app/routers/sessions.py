@@ -1,6 +1,6 @@
 import logging
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks
 
 logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
@@ -33,6 +33,7 @@ from app.services.session_service import (
     save_responses,
 )
 from app.services.report_service import run_scoring_pipeline
+from app.middleware.rate_limit import limiter, get_user_id
 
 router = APIRouter()
 
@@ -62,7 +63,9 @@ def list_sessions(
 
 
 @router.post("", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/day", key_func=get_user_id)
 def create_assessment_session(
+    request: Request,
     body: SessionCreateRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -202,7 +205,9 @@ def section_status(
 
 
 @router.post("/{session_id}/complete", status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("3/day", key_func=get_user_id)
 def complete_session(
+    request: Request,
     session_id: uuid.UUID,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
