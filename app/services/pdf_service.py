@@ -3,15 +3,23 @@
 Flow:
   report_json (from Bedrock) + scores (from Score DB row) + user info
   → SVG charts (charts.py)
-  → Jinja2 renders HTML (templates/report_default.html)
-  → WeasyPrint converts HTML → PDF bytes
+  → Jinja2 renders HTML (templates/report_*.html)
+  → Playwright Lambda OR WeasyPrint fallback → PDF bytes
   → caller uploads bytes to S3
 """
+import base64
+import json
+import logging
 from datetime import date
 from pathlib import Path
 from typing import Optional
 
+import boto3
+from botocore.exceptions import ClientError
+
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+logger = logging.getLogger(__name__)
 
 from app.services.charts import (
     generate_aptitude_bars,
@@ -76,8 +84,15 @@ def generate_pdf(
     ocean_svg   = generate_ocean_bars(ocean_raw, ocean_pct)
     aptitude_svg = generate_aptitude_bars(apt_scores, apt_pct)
 
+    # ── Select template by context ────────────────────────────────────────────
+    _B2B_CONTEXTS = {"b2b-partner", "DATE-college", "training-program"}
+    if context_of_origin in _B2B_CONTEXTS:
+        template_name = "report_b2b.html"
+    else:
+        template_name = "report_default.html"
+
     # ── Render template ───────────────────────────────────────────────────────
-    template = _jinja_env.get_template("report_default.html")
+    template = _jinja_env.get_template(template_name)
     html_str = template.render(
         report=report_json,
         scores=scores,
@@ -89,19 +104,64 @@ def generate_pdf(
         },
         session_id=str(session_id),
         generated_date=generated_date,
+        partner_name=None,
+        partner_color=None,
     )
 
-    # ── WeasyPrint render ─────────────────────────────────────────────────────
+    # WeasyPrint fallback path — returns raw PDF bytes
+    # (used in dev or when PDF_LAMBDA_FUNCTION_NAME is not set)
     from weasyprint import HTML, CSS  # lazy import — GTK not available on Windows dev
     css_path = STATIC_DIR / "report.css"
     extra_css = [CSS(filename=str(css_path))] if css_path.exists() else []
 
-    pdf_bytes = HTML(
+    return HTML(
         string=html_str,
         base_url=str(_REPO_ROOT),
     ).write_pdf(stylesheets=extra_css)
 
-    return pdf_bytes
+
+def render_html(
+    report_json: dict,
+    scores: dict,
+    user: dict,
+    session_id: str,
+    context_of_origin: Optional[str] = None,
+    generated_date: Optional[str] = None,
+) -> str:
+    """
+    Render the Jinja2 HTML template and return the HTML string.
+    Used by report_service when invoking the Playwright Lambda (TDD §7.4 step 4).
+    Lambda receives this HTML, renders via Chromium, uploads PDF to S3 directly.
+    """
+    if generated_date is None:
+        generated_date = __import__("datetime").date.today().strftime("%B %d, %Y")
+
+    riasec_scores = scores.get("riasec", {})
+    ocean_data = scores.get("ocean", {})
+    ocean_raw = ocean_data.get("raw", ocean_data)
+    ocean_pct = ocean_data.get("percentiles", {})
+    apt_data = scores.get("aptitude", {})
+    apt_scores = apt_data.get("scores", apt_data)
+    apt_pct = apt_data.get("percentiles", {})
+
+    riasec_svg   = generate_riasec_radar(riasec_scores)
+    ocean_svg    = generate_ocean_bars(ocean_raw, ocean_pct)
+    aptitude_svg = generate_aptitude_bars(apt_scores, apt_pct)
+
+    _B2B_CONTEXTS = {"b2b-partner", "DATE-college", "training-program"}
+    template_name = "report_b2b.html" if context_of_origin in _B2B_CONTEXTS else "report_default.html"
+
+    template = _jinja_env.get_template(template_name)
+    return template.render(
+        report=report_json,
+        scores=scores,
+        user=user,
+        charts={"riasec_svg": riasec_svg, "ocean_svg": ocean_svg, "aptitude_svg": aptitude_svg},
+        session_id=str(session_id),
+        generated_date=generated_date,
+        partner_name=None,
+        partner_color=None,
+    )
 
 
 def scores_from_db_row(score_row) -> dict:

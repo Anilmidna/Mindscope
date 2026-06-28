@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ partner_name or "Partner" }} — Assessment Report</title>
+  <link rel="stylesheet" href="../static/report.css">
+  <style>
+    /* B2B overrides — partner branding applied via partner_color variable */
+    .cover-page { border-top: 6px solid {{ partner_color or "#2563eb" }}; }
+    .brand { color: {{ partner_color or "#2563eb" }}; }
+    .section-number { background: {{ partner_color or "#2563eb" }}; }
+    .partner-logo-placeholder {
+      width: 120px; height: 40px;
+      border: 2px dashed #d1d5db;
+      display: flex; align-items: center; justify-content: center;
+      color: #9ca3af; font-size: 11px; border-radius: 4px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ COVER PAGE ══════════════════════════════════════════════════════════ -->
+  <div class="cover-page">
+    <!-- Partner logo placeholder — replace with <img> when partner sends asset -->
+    <div class="partner-logo-placeholder">Partner Logo</div>
+
+    <div class="brand">{{ partner_name or "MindScope Partner" }}</div>
+    <div class="brand-tagline">Powered by MindScope &middot; Career &amp; Personality Intelligence</div>
+
+    <h1 class="report-title">Assessment Report</h1>
+
+    <div class="cover-meta">
+      <div class="cover-meta-row">
+        <span class="cover-label">Prepared for</span>
+        <span class="cover-value">{{ user.name or "Participant" }}</span>
+      </div>
+      {% if user.email %}
+      <div class="cover-meta-row">
+        <span class="cover-label">Email</span>
+        <span class="cover-value">{{ user.email }}</span>
+      </div>
+      {% endif %}
+      <div class="cover-meta-row">
+        <span class="cover-label">Date</span>
+        <span class="cover-value">{{ generated_date }}</span>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      This report is confidential and prepared exclusively for {{ partner_name or "this organisation" }}.
+    </div>
+  </div>
+
+  <!-- ══ SECTION 1 — SNAPSHOT ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <h2>Your Profile Snapshot</h2>
+    </div>
+    <div class="section-body">
+      <p class="snapshot-text">{{ report.snapshot }}</p>
+
+      <div class="chart-block">
+        <div class="chart-title">RIASEC Interest Profile</div>
+        <div class="chart-container">
+          {{ charts.riasec_svg | safe }}
+        </div>
+        <p class="chart-caption">
+          Each axis shows your interest strength in that work environment type (0–100).
+          Higher values indicate stronger fit.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 2 — STRENGTHS ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <h2>Your Strengths</h2>
+    </div>
+    <div class="section-body">
+      <p>{{ report.strengths }}</p>
+
+      <div class="chart-block">
+        <div class="chart-title">Big Five Personality Profile</div>
+        <div class="chart-container wide">
+          {{ charts.ocean_svg | safe }}
+        </div>
+        <p class="chart-caption">
+          Bars show your percentile rank relative to the general population.
+          Blue ≥ 70th · Green 30–70th · Red &lt; 30th.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 3 — FRICTION POINTS ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <h2>Friction Points</h2>
+    </div>
+    <div class="section-body">
+      <p>{{ report.friction_points }}</p>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 4 — CAREER DIRECTIONS ══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <h2>Career Directions</h2>
+    </div>
+    <div class="section-body">
+      {% if report.career_directions is iterable and report.career_directions is not string %}
+        <ul class="career-list">
+          {% for direction in report.career_directions %}
+            <li>{{ direction }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>{{ report.career_directions }}</p>
+      {% endif %}
+
+      <div class="chart-block">
+        <div class="chart-title">Aptitude Profile</div>
+        <div class="chart-container wide">
+          {{ charts.aptitude_svg | safe }}
+        </div>
+        <p class="chart-caption">
+          Scores are out of 15 correct answers per domain.
+          Percentile compares you to a typical graduate population.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 5 — NEXT STEPS ══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">05</span>
+      <h2>Next Steps</h2>
+    </div>
+    <div class="section-body">
+      {% if report.next_steps is iterable and report.next_steps is not string %}
+        <ol class="next-steps-list">
+          {% for step in report.next_steps %}
+            <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p>{{ report.next_steps }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════════════════════ -->
+  <div class="report-footer">
+    <p class="disclaimer">
+      This is a strengths and career-fit tool, not a clinical diagnostic assessment.
+      Results are based on self-reported responses and should be interpreted as guidance,
+      not definitive evaluation.
+    </p>
+    <p class="footer-meta">
+      Report ID: {{ session_id }} &nbsp;·&nbsp; Powered by MindScope &nbsp;·&nbsp; {{ generated_date }}
+      {% if partner_name %}&nbsp;·&nbsp; {{ partner_name }}{% endif %}
+    </p>
+  </div>
+
+</body>
+</html>
