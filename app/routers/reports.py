@@ -62,7 +62,7 @@ def report_download(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Returns pre-signed S3 URL (1 hour). PDF generation is Week 2 — returns 404 until then."""
+    """Returns a pre-signed S3 URL valid for 1 hour."""
     session = _get_session_for_user(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
@@ -73,8 +73,8 @@ def report_download(
 
     if not report.s3_url:
         raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="PDF generation is not yet available. Use /status to get the JSON report.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PDF is still being generated. Please try again shortly.",
         )
 
     # Generate pre-signed URL from S3 key

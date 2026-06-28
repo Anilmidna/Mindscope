@@ -6,7 +6,7 @@ Flow:
   → score (RIASEC + OCEAN + Aptitude)
   → build profile
   → Bedrock (llm_service) → report JSON
-  → PDF (WeasyPrint via pdf_service)
+  → PDF (Playwright Lambda via pdf_service, WeasyPrint fallback)
   → S3 upload
   → SES email with pre-signed download link
 """
