@@ -81,7 +81,7 @@ class LLMService:
 
         # ── Default models per stage ──────────────────────────────────────
         self._defaults = {
-            "question_generation":      "sonnet",
+            "question_generation":      "opus",
             "question_correction":      "sonnet",
             "question_personalization": "sonnet",
             "report_generation":        "opus",
