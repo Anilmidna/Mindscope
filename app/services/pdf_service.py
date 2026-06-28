@@ -7,19 +7,11 @@ Flow:
   → Playwright Lambda OR WeasyPrint fallback → PDF bytes
   → caller uploads bytes to S3
 """
-import base64
-import json
-import logging
 from datetime import date
 from pathlib import Path
 from typing import Optional
 
-import boto3
-from botocore.exceptions import ClientError
-
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-
-logger = logging.getLogger(__name__)
 
 from app.services.charts import (
     generate_aptitude_bars,
@@ -65,51 +57,15 @@ def generate_pdf(
     Returns:
         PDF as bytes
     """
-    if generated_date is None:
-        generated_date = date.today().strftime("%B %d, %Y")
-
-    # ── Build chart inputs ────────────────────────────────────────────────────
-    riasec_scores = scores.get("riasec", {})
-
-    ocean_data = scores.get("ocean", {})
-    # Accept both flat {"O": 34} and nested {"raw": {"O": 34}, "percentiles": {...}}
-    ocean_raw = ocean_data.get("raw", ocean_data)
-    ocean_pct = ocean_data.get("percentiles", {})
-
-    apt_data = scores.get("aptitude", {})
-    apt_scores = apt_data.get("scores", apt_data)
-    apt_pct = apt_data.get("percentiles", {})
-
-    riasec_svg  = generate_riasec_radar(riasec_scores)
-    ocean_svg   = generate_ocean_bars(ocean_raw, ocean_pct)
-    aptitude_svg = generate_aptitude_bars(apt_scores, apt_pct)
-
-    # ── Select template by context ────────────────────────────────────────────
-    _B2B_CONTEXTS = {"b2b-partner", "DATE-college", "training-program"}
-    if context_of_origin in _B2B_CONTEXTS:
-        template_name = "report_b2b.html"
-    else:
-        template_name = "report_default.html"
-
-    # ── Render template ───────────────────────────────────────────────────────
-    template = _jinja_env.get_template(template_name)
-    html_str = template.render(
-        report=report_json,
+    html_str = render_html(
+        report_json=report_json,
         scores=scores,
         user=user,
-        charts={
-            "riasec_svg":   riasec_svg,
-            "ocean_svg":    ocean_svg,
-            "aptitude_svg": aptitude_svg,
-        },
-        session_id=str(session_id),
+        session_id=session_id,
+        context_of_origin=context_of_origin,
         generated_date=generated_date,
-        partner_name=None,
-        partner_color=None,
     )
 
-    # WeasyPrint fallback path — returns raw PDF bytes
-    # (used in dev or when PDF_LAMBDA_FUNCTION_NAME is not set)
     from weasyprint import HTML, CSS  # lazy import — GTK not available on Windows dev
     css_path = STATIC_DIR / "report.css"
     extra_css = [CSS(filename=str(css_path))] if css_path.exists() else []
@@ -134,7 +90,7 @@ def render_html(
     Lambda receives this HTML, renders via Chromium, uploads PDF to S3 directly.
     """
     if generated_date is None:
-        generated_date = __import__("datetime").date.today().strftime("%B %d, %Y")
+        generated_date = date.today().strftime("%B %d, %Y")
 
     riasec_scores = scores.get("riasec", {})
     ocean_data = scores.get("ocean", {})
