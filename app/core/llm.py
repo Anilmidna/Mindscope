@@ -20,11 +20,19 @@ Usage:
     chat = llm_service.get_chat_model("opus", temperature=0.5)
 """
 
+import logging
+import re
+import time
 from typing import Optional
 from langchain_aws import ChatBedrockConverse
 from langchain_core.messages import SystemMessage, HumanMessage
 import json
 from app.core.config import settings
+
+_cb_logger = logging.getLogger(__name__)
+
+# Intake fields that could contain user free-text (prompt injection surface)
+_FREE_TEXT_INTAKE_FIELDS = {"future_goals", "challenges", "domain", "specialization"}
 
 
 # ── Bedrock Model Registry ───────────────────────────────────────────────────
@@ -100,6 +108,48 @@ class LLMService:
 
         self._model_cache: dict[str, ChatBedrockConverse] = {}
 
+        # ── Circuit breaker state ─────────────────────────────────────────
+        # 5 consecutive failures within 10 min → open circuit for 5 min
+        self._cb_failure_count: int = 0
+        self._cb_first_failure_at: float = 0.0
+        self._cb_open_until: float = 0.0
+        self._CB_THRESHOLD = 5
+        self._CB_WINDOW_SECS = 600    # 10 minutes
+        self._CB_PAUSE_SECS = 300     # 5 minutes
+
+    def _cb_check(self):
+        """Raise RuntimeError if circuit is open."""
+        now = time.monotonic()
+        if now < self._cb_open_until:
+            remaining = int(self._cb_open_until - now)
+            raise RuntimeError(
+                f"Bedrock circuit breaker open — too many recent failures. "
+                f"Retry in {remaining}s."
+            )
+
+    def _cb_record_failure(self):
+        """Record a Bedrock failure; open circuit if threshold exceeded."""
+        now = time.monotonic()
+        if self._cb_failure_count == 0 or (now - self._cb_first_failure_at) > self._CB_WINDOW_SECS:
+            self._cb_failure_count = 1
+            self._cb_first_failure_at = now
+        else:
+            self._cb_failure_count += 1
+
+        if self._cb_failure_count >= self._CB_THRESHOLD:
+            self._cb_open_until = now + self._CB_PAUSE_SECS
+            self._cb_failure_count = 0
+            _cb_logger.error(
+                "Bedrock circuit breaker opened — %d consecutive failures. "
+                "Pausing LLM calls for %ds.",
+                self._CB_THRESHOLD, self._CB_PAUSE_SECS,
+            )
+
+    def _cb_record_success(self):
+        """Reset failure counter on success."""
+        self._cb_failure_count = 0
+        self._cb_first_failure_at = 0.0
+
     # ── Public: Change defaults at runtime ───────────────────────────────────
 
     def set_default(self, stage: str, model: str,
@@ -134,14 +184,22 @@ class LLMService:
     ) -> ChatBedrockConverse:
         if model not in BEDROCK_MODELS:
             raise ValueError(f"Unknown model '{model}'. Available: {list(BEDROCK_MODELS.keys())}")
-        cache_key = f"{model}_{temperature}_{max_tokens}"
+        guardrail_id = settings.BEDROCK_GUARDRAIL_ID
+        guardrail_version = settings.BEDROCK_GUARDRAIL_VERSION
+        cache_key = f"{model}_{temperature}_{max_tokens}_{guardrail_id}"
         if cache_key not in self._model_cache:
-            self._model_cache[cache_key] = ChatBedrockConverse(
+            kwargs = dict(
                 model=BEDROCK_MODELS[model],
                 region_name=self.region,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
+            if guardrail_id:
+                kwargs["guardrails"] = {
+                    "guardrailIdentifier": guardrail_id,
+                    "guardrailVersion": guardrail_version,
+                }
+            self._model_cache[cache_key] = ChatBedrockConverse(**kwargs)
         return self._model_cache[cache_key]
 
     # ── Pipeline Stage Methods ────────────────────────────────────────────────
@@ -151,6 +209,7 @@ class LLMService:
         profile: dict,
         intake: dict,
         model: Optional[str] = None,
+        strict: bool = False,
     ) -> dict:
         """
         Generate the 5-section assessment report.
@@ -179,16 +238,35 @@ Compare scores against stated goals and current situation.
 If there is alignment, reinforce it with the specific numbers.
 If there is a gap, name it constructively with the specific numbers."""
 
+        # Sanitize free-text intake fields: strip HTML/XML tags, then wrap in
+        # XML tags so the model treats them as user data, not instructions.
+        sanitized_intake = {}
+        for key, value in intake.items():
+            if key in _FREE_TEXT_INTAKE_FIELDS and isinstance(value, str):
+                clean = re.sub(r"<[^>]+>", "", value).strip()
+                sanitized_intake[key] = f"<user_{key}>{clean}</user_{key}>"
+            else:
+                sanitized_intake[key] = value
+
         human_prompt = f"""User Profile (scores + intake):
 {json.dumps(profile, indent=2)}
 
 Intake Form:
-{json.dumps(intake, indent=2)}"""
+{json.dumps(sanitized_intake, indent=2)}"""
 
-        response = chat.invoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=human_prompt),
-        ])
+        if strict:
+            human_prompt += "\n\nREMINDER: Do not include any clinical or diagnostic language. You are a career-fit tool only."
+
+        self._cb_check()
+        try:
+            response = chat.invoke([
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=human_prompt),
+            ])
+            self._cb_record_success()
+        except Exception as e:
+            self._cb_record_failure()
+            raise e
 
         return _parse_json_response(response.content)
 
