@@ -23,11 +23,13 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.llm import llm_service, BEDROCK_MODELS, PROMPT_TEMPLATE_VERSION
 from app.services.email_service import send_report_ready_email
-from app.services.pdf_service import generate_pdf, scores_from_db_row
+from app.services.pdf_service import generate_pdf, render_html, scores_from_db_row
+from app.services.report_validator import validate_report
 
 logger = logging.getLogger(__name__)
 from app.models.bias_flag import BiasFlag
 from app.models.intake import IntakeForm
+from app.models.norm_group import NormGroup
 from app.models.report import Report
 from app.models.response import Response
 from app.models.score import Score
@@ -36,6 +38,12 @@ from scoring.aptitude import score as aptitude_score
 from scoring.ocean import score as ocean_score
 from scoring.profile_builder import build_profile
 from scoring.riasec import score as riasec_score
+
+
+def _load_norms(db: Session, context: str) -> dict:
+    """Load score_stats from norm_groups table for a given context. Returns {} if not found."""
+    row = db.query(NormGroup).filter(NormGroup.context == context).first()
+    return row.score_stats if row and row.score_stats else {}
 
 
 def _get_responses_by_domain(db: Session, session_id) -> dict:
@@ -133,10 +141,14 @@ def run_scoring_pipeline(
             "Spatial":   by_domain.get("Spatial", []),
         }
 
-        # ── 2. Score ───────────────────────────────────────────────────────
-        riasec_result = riasec_score(riasec_responses)
-        ocean_result = ocean_score(ocean_responses)
-        aptitude_result = aptitude_score(aptitude_responses)
+        # ── 2. Score (with DB-sourced norms, fallback to hardcoded if table empty) ──
+        riasec_norms = _load_norms(db, "riasec-general")
+        ocean_norms = _load_norms(db, "ocean-general")
+        aptitude_norms = _load_norms(db, "aptitude-india-graduate")
+
+        riasec_result = riasec_score(riasec_responses, norms=riasec_norms or None)
+        ocean_result = ocean_score(ocean_responses, norms=ocean_norms or None)
+        aptitude_result = aptitude_score(aptitude_responses, norms=aptitude_norms or None)
         aptitude = aptitude_result.as_scores_dict()
 
         # ── 3. Bias flags ──────────────────────────────────────────────────
@@ -154,7 +166,7 @@ def run_scoring_pipeline(
 
         # ── 4. Persist scores ──────────────────────────────────────────────
         percentiles = {
-            "riasec": riasec_result.normalized,
+            "riasec": riasec_result.percentiles,
             "ocean": ocean_result.percentiles,
             "aptitude": aptitude_result.as_percentiles_dict(),
         }
@@ -214,6 +226,29 @@ def run_scoring_pipeline(
             model=model_override,
         )
 
+        # ── 6b. Validate output (Layer 3 guardrail) ────────────────────────
+        is_valid, violations = validate_report(llm_json)
+        if not is_valid:
+            logger.warning(
+                "Report validation failed — retrying with stricter prompt",
+                extra={"session_id": str(session.id), "violations": violations},
+            )
+            llm_json = llm_service.generate_report(
+                profile=profile,
+                intake=intake_dict,
+                model=model_override,
+                strict=True,
+            )
+            is_valid, violations = validate_report(llm_json)
+            if not is_valid:
+                logger.error(
+                    "Report validation failed after retry — flagging for review",
+                    extra={"session_id": str(session.id), "violations": violations},
+                )
+                report.status = "flagged_for_review"
+                db.commit()
+                raise ValueError(f"Report flagged for review. Violations: {violations}")
+
         # ── 7. Persist report JSON ─────────────────────────────────────────
         used_model = model_override or llm_service._defaults["report_generation"]
         report.raw_llm_json = json.dumps(llm_json)
@@ -233,23 +268,55 @@ def run_scoring_pipeline(
                                                "model": report.llm_model,
                                                "stage": "report_generation"})
 
-        # ── 8. Generate PDF + upload to S3 ────────────────────────────────
+        # ── 8. Generate PDF + upload to S3 (TDD §7.4) ────────────────────────
         user_row = session.user
         user_info = {
             "name": user_row.name or "",
             "email": user_row.email or "",
         }
         chart_scores = scores_from_db_row(score_row)
+        expected_s3_key = f"reports/{session.user_id}/{session.id}.pdf"
 
+        s3_key = None
         try:
-            pdf_bytes = generate_pdf(
-                report_json=llm_json,
-                scores=chart_scores,
-                user=user_info,
-                session_id=str(session.id),
-                context_of_origin=session.context_of_origin,
-            )
-            s3_key = _upload_pdf_to_s3(pdf_bytes, session.user_id, session.id)
+            lambda_fn = settings.PDF_LAMBDA_FUNCTION_NAME
+            if lambda_fn:
+                # TDD §7: Lambda renders via Playwright + uploads to S3 itself
+                html_str = render_html(
+                    report_json=llm_json,
+                    scores=chart_scores,
+                    user=user_info,
+                    session_id=str(session.id),
+                    context_of_origin=session.context_of_origin,
+                )
+                import json as _json
+                lambda_client = boto3.client("lambda", region_name=settings.AWS_REGION)
+                response = lambda_client.invoke(
+                    FunctionName=lambda_fn,
+                    InvocationType="RequestResponse",
+                    Payload=_json.dumps({
+                        "html": html_str,
+                        "s3_key": expected_s3_key,
+                        "s3_bucket": settings.S3_BUCKET_NAME,
+                    }).encode(),
+                )
+                result = _json.loads(response["Payload"].read())
+                if result.get("status") == "success":
+                    s3_key = result["s3_key"]
+                    logger.info("PDF rendered via Lambda: %s", s3_key)
+                else:
+                    raise RuntimeError(f"Lambda PDF failed: {result}")
+            else:
+                # WeasyPrint fallback (dev or Lambda not yet deployed)
+                pdf_bytes = generate_pdf(
+                    report_json=llm_json,
+                    scores=chart_scores,
+                    user=user_info,
+                    session_id=str(session.id),
+                    context_of_origin=session.context_of_origin,
+                )
+                s3_key = _upload_pdf_to_s3(pdf_bytes, session.user_id, session.id)
+
             if s3_key:
                 report.s3_url = s3_key
                 db.commit()
