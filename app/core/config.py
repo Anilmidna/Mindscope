@@ -30,6 +30,17 @@ class Settings(BaseSettings):
     BEDROCK_MODEL_ID: str = "us.anthropic.claude-sonnet-4-6"
     BEDROCK_OPUS_MODEL_ID: str = "us.anthropic.claude-opus-4-7"
 
+    # Razorpay
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+
+    # Bedrock Guardrails (Layer 1 — set after running scripts/create_bedrock_guardrail.py)
+    BEDROCK_GUARDRAIL_ID: str = ""
+    BEDROCK_GUARDRAIL_VERSION: str = "DRAFT"
+
+    # PDF Lambda (B5 — empty means use WeasyPrint fallback)
+    PDF_LAMBDA_FUNCTION_NAME: str = ""
+
     # App
     APP_ENV: str = "development"
     # Comma-separated list: "https://app.vercel.app,http://localhost:5173"

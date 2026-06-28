@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
 from app.db.session import get_db, SessionLocal
+from app.models.payment import Payment
 from app.models.report import Report
 from app.models.user import User
 from app.schemas.session import (
@@ -126,6 +127,18 @@ def get_questions(
     session = get_session_or_404(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    # B2C sessions require payment before assessment access
+    if session.flow_type == "b2c":
+        paid = db.query(Payment).filter(
+            Payment.session_id == session_id,
+            Payment.status == "paid",
+        ).first()
+        if not paid:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail="Payment required to start assessment",
+            )
 
     items, section_started_at, time_limit, persona = get_question_batch(db, session, domain)
     return QuestionBatchResponse(

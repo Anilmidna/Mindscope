@@ -1,2 +1,3 @@
 from app.models.user import User  # noqa: F401
 from app.models.token_blocklist import RefreshTokenBlocklist  # noqa: F401
+from app.models.payment import Payment  # noqa: F401
