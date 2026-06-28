@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status, Backgrou
 logger = logging.getLogger(__name__)
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.deps import get_current_user
 from app.db.session import get_db, SessionLocal
 from app.models.payment import Payment
@@ -132,7 +133,9 @@ def get_questions(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
 
     # B2C sessions require payment before assessment access
-    if session.flow_type == "b2c":
+    # Gate is skipped in development (APP_ENV=development) so local testing works
+    # without Razorpay credentials configured
+    if session.flow_type == "b2c" and settings.APP_ENV != "development":
         paid = db.query(Payment).filter(
             Payment.session_id == session_id,
             Payment.status == "paid",

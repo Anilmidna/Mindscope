@@ -69,7 +69,11 @@ export default function Assessment() {
         setTimeLeft(null);
         clearInterval(timerRef.current);
       }
-    } catch {
+    } catch (err) {
+      if (err.response?.status === 402) {
+        navigate(`/checkout/${sessionId}`, { replace: true });
+        return;
+      }
       setLoadError('Failed to load questions. Please check your connection and try again.');
     } finally {
       setLoading(false);
