@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/client";
+import Footer from "../components/Footer";
 
 export default function Checkout() {
   const { sessionId } = useParams();
@@ -61,30 +62,33 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <script src="https://checkout.razorpay.com/v1/checkout.js" />
-      <div className="bg-white rounded-2xl shadow p-8 max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Assessment</h1>
-        <p className="text-gray-500 mb-6">
-          Get your full RIASEC + Big Five + Aptitude report with AI-generated career insights.
-        </p>
-        <div className="text-4xl font-bold text-indigo-600 mb-6">₹199</div>
-        <ul className="text-left text-sm text-gray-600 space-y-2 mb-8">
-          <li>✓ Full psychometric assessment (3 frameworks)</li>
-          <li>✓ AI-generated personalized career report</li>
-          <li>✓ PDF download + email delivery</li>
-        </ul>
-        {error && (
-          <p className="text-red-500 text-sm mb-4">{error}</p>
-        )}
-        <button
-          onClick={handlePay}
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {loading ? "Processing..." : "Pay ₹199 & Start Assessment"}
-        </button>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+        <script src="https://checkout.razorpay.com/v1/checkout.js" />
+        <div style={{ background: '#fff', borderRadius: '16px', boxShadow: '0 4px 24px rgba(0,0,0,0.1)', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '8px' }}>Complete Your Assessment</h1>
+          <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+            Get your full RIASEC + Big Five + Aptitude report with AI-generated career insights.
+          </p>
+          <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#4f46e5', marginBottom: '24px' }}>₹199</div>
+          <ul style={{ textAlign: 'left', fontSize: '0.875rem', color: '#374151', marginBottom: '32px', listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li>✓ Full psychometric assessment (3 frameworks)</li>
+            <li>✓ AI-generated personalized career report</li>
+            <li>✓ PDF download + email delivery</li>
+          </ul>
+          {error && (
+            <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '16px' }}>{error}</p>
+          )}
+          <button
+            onClick={handlePay}
+            disabled={loading}
+            style={{ width: '100%', background: '#4f46e5', color: '#fff', border: 'none', padding: '14px', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1 }}
+          >
+            {loading ? "Processing..." : "Pay ₹199 & Start Assessment"}
+          </button>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

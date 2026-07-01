@@ -16,3 +16,12 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+}
+
+input, select, textarea, button {
+  font-size: 16px; /* prevents iOS zoom on focus */
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import client from '../api/client';
+import Footer from '../components/Footer';
 
 export default function Report() {
   const { sessionId } = useParams();
@@ -59,7 +60,7 @@ export default function Report() {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={{ ...styles.container, display: 'flex', flexDirection: 'column' }}>
       <header style={styles.header}>
         <span style={styles.logo}>MindScope</span>
         <button style={styles.downloadBtn} onClick={download} disabled={downloading}>
@@ -67,7 +68,7 @@ export default function Report() {
         </button>
       </header>
 
-      <main style={styles.main}>
+      <main role="main" style={styles.main}>
         {report && (
           <>
             <Section title="Snapshot" content={report.snapshot} color="#4285f4" />
@@ -83,6 +84,7 @@ export default function Report() {
           <button style={styles.dashBtn} onClick={() => navigate('/dashboard')}>Back to Dashboard</button>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
@@ -110,7 +112,7 @@ const styles = {
   logo: { fontWeight: 700, fontSize: '1.1rem' },
   downloadBtn: { background: '#4caf50', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' },
   main: { maxWidth: '800px', margin: '0 auto', padding: '32px 16px' },
-  section: { background: '#fff', borderRadius: '10px', padding: '24px 24px 24px 20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
+  section: { background: '#fff', borderRadius: '10px', padding: '24px 24px 24px 20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', overflow: 'hidden', wordBreak: 'break-word' },
   text: { lineHeight: 1.7, color: '#333' },
   list: { paddingLeft: '20px', margin: 0 },
   listItem: { marginBottom: '10px', lineHeight: 1.6, color: '#333' },

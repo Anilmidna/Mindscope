@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import client from '../api/client';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const SECTIONS = ['RIASEC', 'OCEAN', 'Logical', 'Numerical', 'Verbal', 'Spatial'];
 const TIMED = new Set(['Logical', 'Numerical', 'Verbal', 'Spatial']);
@@ -141,9 +142,9 @@ export default function Assessment() {
   const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   // Still resolving resume state
-  if (sectionIdx === null) return <div style={styles.center}>Loading assessment...</div>;
+  if (sectionIdx === null) return <div style={styles.center}><LoadingSpinner message="Loading assessment..." /></div>;
 
-  if (loading) return <div style={styles.center}>Loading questions...</div>;
+  if (loading) return <div style={styles.center}><LoadingSpinner message="Loading questions..." /></div>;
 
   if (loadError) {
     return (
@@ -161,7 +162,14 @@ export default function Assessment() {
     <div style={styles.container}>
       <header style={styles.header}>
         <span style={styles.logo}>MindScope</span>
-        <div style={styles.progress}>
+        <div
+          style={styles.progress}
+          role="progressbar"
+          aria-label={`Section ${sectionIdx + 1} of ${SECTIONS.length}`}
+          aria-valuenow={sectionIdx + 1}
+          aria-valuemin={1}
+          aria-valuemax={SECTIONS.length}
+        >
           {SECTIONS.map((s, i) => (
             <div key={s} style={{ ...styles.dot, background: i < sectionIdx ? '#4caf50' : i === sectionIdx ? '#4285f4' : '#ddd' }} title={s} />
           ))}
@@ -171,9 +179,9 @@ export default function Assessment() {
         )}
       </header>
 
-      <main style={styles.main}>
+      <main role="main" style={styles.main}>
         <h2 style={styles.sectionTitle}>{domain} {TIMED.has(domain) ? '(Timed)' : ''}</h2>
-        <p style={styles.count}>{answered} / {required} answered</p>
+        <p aria-live="polite" style={styles.count}>{answered} / {required} answered</p>
 
         {attentionFailed && (
           <div style={styles.warning}>Some attention-check questions were not answered as expected. Please read carefully.</div>
@@ -187,7 +195,7 @@ export default function Assessment() {
           <div key={q.item_id} style={styles.card}>
             <p style={styles.qText}>{q.text}</p>
             {q.options ? (
-              <div style={styles.options}>
+              <div role="radiogroup" aria-label={q.text} style={styles.options}>
                 {q.options.map((opt, i) => (
                   <label key={i} style={{ ...styles.optLabel, background: answers[q.item_id] === i ? '#e8f0fe' : '#f9f9f9' }}>
                     <input type="radio" name={q.item_id} value={i}
@@ -198,7 +206,7 @@ export default function Assessment() {
                 ))}
               </div>
             ) : (
-              <div style={styles.likert}>
+              <div role="radiogroup" aria-label={q.text} style={styles.likert}>
                 {LIKERT.map((label, i) => (
                   <label key={i} style={styles.likertItem}>
                     <input type="radio" name={q.item_id} value={i + 1}
@@ -237,11 +245,11 @@ const styles = {
   warning: { background: '#fff3e0', border: '1px solid #ff9800', borderRadius: '6px', padding: '12px', marginBottom: '16px', color: '#e65100' },
   errorBanner: { background: '#fff3f3', border: '1px solid #ffcdd2', color: '#c62828', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' },
   card: { background: '#fff', borderRadius: '10px', padding: '20px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' },
-  qText: { fontWeight: 500, marginBottom: '14px', lineHeight: 1.5 },
+  qText: { fontWeight: 500, marginBottom: '14px', lineHeight: 1.5, wordBreak: 'break-word' },
   likert: { display: 'flex', justifyContent: 'space-between', gap: '4px' },
   likertItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', flex: '1 1 0', minWidth: 0 },
   likertLabel: { fontSize: '0.7rem', textAlign: 'center', color: '#555' },
   options: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  optLabel: { display: 'flex', alignItems: 'center', padding: '10px 14px', borderRadius: '6px', cursor: 'pointer', border: '1px solid #eee' },
+  optLabel: { display: 'flex', alignItems: 'center', padding: '10px 14px', borderRadius: '6px', cursor: 'pointer', border: '1px solid #eee', wordBreak: 'break-word' },
   btn: { background: '#4285f4', color: '#fff', border: 'none', padding: '14px', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', width: '100%', marginTop: '8px' },
 };

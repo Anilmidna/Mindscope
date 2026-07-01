@@ -73,11 +73,11 @@ export default function Login() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.centered}>
+      <main role="main" style={styles.centered}>
         <div style={styles.card}>
           <h1 style={styles.title}>MindScope</h1>
           <p style={styles.subtitle}>AI-Powered Psychometric Assessment</p>
-          {error && <p style={styles.error}>Authentication failed. Please try again.</p>}
+          {error && <p role="alert" style={styles.error}>Authentication failed. Please try again.</p>}
           <button style={styles.button} onClick={handleGoogleLogin}>
             Sign in with Google
           </button>
@@ -85,7 +85,7 @@ export default function Login() {
             By continuing, you agree to our data processing terms in accordance with India's DPDP Act.
           </p>
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

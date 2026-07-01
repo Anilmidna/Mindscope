@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { clearToken } from '../auth';
 import Footer from '../components/Footer';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorBanner from '../components/ErrorBanner';
 
 const STATUS_COLORS = {
   started:       '#ff9800',
@@ -74,7 +76,7 @@ export default function Dashboard() {
         </button>
       </header>
 
-      <main style={styles.main}>
+      <main role="main" style={styles.main}>
         <div style={styles.topRow}>
           <h2>Your Assessments</h2>
           <button style={styles.startBtn} onClick={startNew} disabled={starting}>
@@ -82,8 +84,8 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {error && <div style={styles.errorBanner}>{error}</div>}
-        {loading && <p>Loading...</p>}
+        {error && <ErrorBanner message={error} onRetry={() => window.location.reload()} />}
+        {loading && <LoadingSpinner message="Loading your sessions..." />}
 
         {!loading && sessions.length === 0 && (
           <div style={styles.empty}>
@@ -122,15 +124,14 @@ const styles = {
   logo: { margin: 0, fontSize: '1.5rem' },
   logoutBtn: { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer' },
   main: { maxWidth: '900px', margin: '0 auto', padding: '32px 16px' },
-  topRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
-  startBtn: { background: '#4285f4', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' },
+  topRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' },
+  startBtn: { background: '#4285f4', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', whiteSpace: 'nowrap' },
   empty: { textAlign: 'center', color: '#999', padding: '48px' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' },
-  card: { background: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px', width: '100%', maxWidth: '100%' },
+  card: { background: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', minWidth: 0 },
   badge: { display: 'inline-block', color: '#fff', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', marginBottom: '8px' },
   date: { color: '#999', fontSize: '0.85rem', margin: '4px 0' },
   context: { color: '#555', fontSize: '0.9rem', margin: '4px 0 12px' },
   resumeBtn: { background: '#1a1a2e', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', width: '100%' },
-  errorBanner: { background: '#fff3f3', border: '1px solid #ffcdd2', color: '#c62828', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' },
   emailNote: { color: '#4caf50', fontSize: '0.8rem', marginTop: '6px', textAlign: 'center' },
 };

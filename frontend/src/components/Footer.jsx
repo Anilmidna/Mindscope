@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer style={styles.footer}>
+    <footer role="contentinfo" style={styles.footer}>
       <span style={styles.copy}>© 2026 MindScope by DevPro Academy</span>
-      <nav style={styles.links}>
+      <nav aria-label="Legal links" style={styles.links}>
         <Link to="/privacy" style={styles.link}>Privacy Policy</Link>
         <Link to="/terms" style={styles.link}>Terms</Link>
         <Link to="/refund" style={styles.link}>Refunds</Link>

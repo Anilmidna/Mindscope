@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import client from '../api/client';
+import Footer from '../components/Footer';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const LIFE_STAGES = [
   'School Student (Class 9-12)', 'Undergraduate Student', 'Final-Year / Graduate Student',
@@ -87,22 +89,29 @@ export default function Intake() {
     }
   }
 
+  if (saving) return (
+    <div style={{ ...styles.outerContainer, alignItems: 'center', justifyContent: 'center' }}>
+      <LoadingSpinner message="Submitting..." />
+    </div>
+  );
+
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Tell us about yourself</h2>
+    <div style={styles.outerContainer}>
+      <main role="main" style={styles.container}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>Tell us about yourself</h2>
         <p style={styles.sub}>This helps us personalise your assessment and report.</p>
         {error && <p style={styles.error}>{error}</p>}
         <form onSubmit={submit}>
-          <Field label="Where are you right now? *">
-            <select value={form.life_stage} onChange={(e) => set('life_stage', e.target.value)} style={styles.input} required>
+          <Field label="Where are you right now? *" htmlFor="life_stage">
+            <select id="life_stage" aria-required="true" value={form.life_stage} onChange={(e) => set('life_stage', e.target.value)} style={styles.input} required>
               <option value="">Select...</option>
               {LIFE_STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
 
-          <Field label="Highest education completed *">
-            <select value={form.education_level} onChange={(e) => set('education_level', e.target.value)} style={styles.input} required>
+          <Field label="Highest education completed *" htmlFor="education_level">
+            <select id="education_level" aria-required="true" value={form.education_level} onChange={(e) => set('education_level', e.target.value)} style={styles.input} required>
               <option value="">Select...</option>
               {EDUCATION_LEVELS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -126,8 +135,8 @@ export default function Intake() {
             <div style={styles.sliderLabels}><span>Very Unsatisfied</span><span>Very Satisfied</span></div>
           </Field>
 
-          <Field label="What are you hoping to achieve in the next 2–3 years? *">
-            <textarea value={form.future_goals} onChange={(e) => set('future_goals', e.target.value)}
+          <Field label="What are you hoping to achieve in the next 2–3 years? *" htmlFor="future_goals">
+            <textarea id="future_goals" aria-required="true" value={form.future_goals} onChange={(e) => set('future_goals', e.target.value)}
               style={{ ...styles.input, height: '80px', resize: 'vertical' }}
               maxLength={200} placeholder="e.g. Switch to data science, get promoted, start a business" required />
             <small style={styles.charCount}>{form.future_goals.length}/200</small>
@@ -190,23 +199,26 @@ export default function Intake() {
             {saving ? 'Saving...' : 'Start Assessment →'}
           </button>
         </form>
-      </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
 
-function Field({ label, children }) {
+function Field({ label, htmlFor, children }) {
   return (
     <div style={{ marginBottom: '20px' }}>
-      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 500, fontSize: '0.9rem' }}>{label}</label>
+      <label htmlFor={htmlFor} style={{ display: 'block', marginBottom: '6px', fontWeight: 500, fontSize: '0.9rem' }}>{label}</label>
       {children}
     </div>
   );
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#f5f5f5', display: 'flex', justifyContent: 'center', padding: '32px 16px' },
-  card: { background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '600px', width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
+  outerContainer: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f5f5f5' },
+  container: { flex: 1, display: 'flex', justifyContent: 'center', padding: '32px 16px' },
+  card: { background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '600px', width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', alignSelf: 'flex-start' },
   title: { margin: '0 0 8px', fontSize: '1.6rem', color: '#1a1a2e' },
   sub: { color: '#666', marginBottom: '28px' },
   input: { width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.95rem', boxSizing: 'border-box' },
