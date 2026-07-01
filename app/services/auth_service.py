@@ -60,6 +60,7 @@ async def _verify_google_id_token(id_token: str, access_token: str | None = None
             algorithms=["RS256"],
             audience=settings.GOOGLE_CLIENT_ID,
             issuer=GOOGLE_ISSUER,
+            leeway=60,  # tolerate up to 60s clock skew (Docker container vs host)
         )
     except (PyJWTError, Exception) as e:
         raise ValueError(f"Invalid Google ID token: {e}")
