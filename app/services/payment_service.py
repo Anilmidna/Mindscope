@@ -75,6 +75,7 @@ def verify_payment(
     razorpay_order_id: str,
     razorpay_payment_id: str,
     razorpay_signature: str,
+    current_user_id: uuid.UUID = None,
 ) -> Payment:
     """
     Verify Razorpay webhook signature and mark payment as paid.
@@ -85,6 +86,9 @@ def verify_payment(
     ).first()
     if not payment:
         raise ValueError("Order not found")
+
+    if current_user_id is not None and payment.user_id != current_user_id:
+        raise PermissionError("Not your payment")
 
     # Razorpay signature = HMAC-SHA256(order_id + "|" + payment_id, secret)
     expected = hmac.new(

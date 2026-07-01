@@ -63,7 +63,10 @@ def verify_payment_endpoint(
             body.razorpay_order_id,
             body.razorpay_payment_id,
             body.razorpay_signature,
+            current_user_id=current_user.id,
         )
+    except PermissionError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -79,6 +82,8 @@ def payment_status(
     payment = get_payment_status(db, session_id)
     if not payment:
         return PaymentStatusResponse(session_id=session_id, status="unpaid")
+    if payment.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your payment")
     return PaymentStatusResponse(
         session_id=session_id,
         status=payment.status,

@@ -1,9 +1,12 @@
+import hmac
 import uuid
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError
+from jwt.exceptions import PyJWTError
 from sqlalchemy.orm import Session
+from typing import Optional
 
+from app.core.config import settings
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.user import User
@@ -18,7 +21,7 @@ def get_current_user(
     token = credentials.credentials
     try:
         payload = decode_token(token)
-    except JWTError:
+    except (PyJWTError, Exception):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 
     if payload.get("type") != "access":
@@ -33,3 +36,12 @@ def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return user
+
+
+def require_admin(x_admin_key: Optional[str] = Header(default=None)):
+    """Verify X-Admin-Key header against settings.ADMIN_API_KEY."""
+    if not settings.ADMIN_API_KEY:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access not configured")
+    provided = x_admin_key or ""
+    if not hmac.compare_digest(provided, settings.ADMIN_API_KEY):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid or missing admin key")

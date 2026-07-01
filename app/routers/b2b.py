@@ -23,10 +23,11 @@ def _is_expired(expires_at: datetime) -> bool:
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.b2b import B2BLicense, UserLicense
 from app.models.user import User
@@ -71,6 +72,7 @@ def _org_response(org: B2BLicense) -> OrgResponse:
 def create_org(
     body: CreateOrgRequest,
     db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
 ):
     if body.context_of_origin not in VALID_CONTEXTS:
         raise HTTPException(status_code=422, detail=f"context_of_origin must be one of {sorted(VALID_CONTEXTS)}")
@@ -96,6 +98,7 @@ def create_org(
 def regenerate_invite(
     org_id: uuid.UUID,
     db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
 ):
     org = db.query(B2BLicense).filter(B2BLicense.id == org_id).first()
     if not org:
@@ -158,9 +161,16 @@ def activate_invite(
     current_user.account_type = "b2b"
     current_user.context_of_origin = org.context_of_origin
 
-    # Create license record and decrement count
+    # Atomic increment — prevents race condition when multiple users activate simultaneously
+    result = db.execute(
+        update(B2BLicense)
+        .where(B2BLicense.id == org.id, B2BLicense.used_licenses < B2BLicense.total_licenses)
+        .values(used_licenses=B2BLicense.used_licenses + 1)
+    )
+    if result.rowcount == 0:
+        raise HTTPException(status_code=409, detail="All licenses have been used")
+
     ul = UserLicense(user_id=current_user.id, license_id=org.id)
-    org.used_licenses += 1
     db.add(ul)
     db.commit()
 

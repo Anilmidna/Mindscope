@@ -3,10 +3,11 @@ Admin endpoints for runtime model management.
 Protected — only accessible with admin credentials.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
+from app.core.deps import require_admin
 from app.core.llm import llm_service, BEDROCK_MODELS
 
 router = APIRouter()
@@ -21,7 +22,7 @@ class ModelUpdateRequest(BaseModel):
 
 
 @router.get("/models")
-def get_current_models():
+def get_current_models(_: None = Depends(require_admin)):
     """
     Show current model assignments for all pipeline stages.
     Use this to see what's running before making changes.
@@ -36,7 +37,7 @@ def get_current_models():
 
 
 @router.put("/models")
-def update_model(req: ModelUpdateRequest):
+def update_model(req: ModelUpdateRequest, _: None = Depends(require_admin)):
     """
     Change the default model for a pipeline stage at runtime.
     Takes effect immediately — no restart needed.
@@ -64,7 +65,7 @@ def update_model(req: ModelUpdateRequest):
 
 
 @router.post("/models/test")
-def test_model(model: str = "sonnet"):
+def test_model(model: str = "sonnet", _: None = Depends(require_admin)):
     """
     Quick test call to verify a model works on Bedrock.
     Sends a trivial prompt and returns the response.

@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     # PDF Lambda (B5 — empty means use WeasyPrint fallback)
     PDF_LAMBDA_FUNCTION_NAME: str = ""
 
+    # Admin
+    ADMIN_API_KEY: str = ""
+
     # App
     APP_ENV: str = "development"
     # Comma-separated list: "https://app.vercel.app,http://localhost:5173"

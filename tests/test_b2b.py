@@ -46,6 +46,10 @@ def _auth_headers(user: User) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
+def _admin_headers() -> dict:
+    return {"X-Admin-Key": "test-admin-key-dev"}
+
+
 # ---------------------------------------------------------------------------
 # POST /b2b/create-org
 # ---------------------------------------------------------------------------
@@ -56,7 +60,7 @@ class TestCreateOrg:
             "org_name": "TATA Consultancy",
             "context_of_origin": "b2b-partner",
             "total_licenses": 10,
-        })
+        }, headers=_admin_headers())
         assert res.status_code == 201
         data = res.json()
         assert data["org_name"] == "TATA Consultancy"
@@ -71,7 +75,7 @@ class TestCreateOrg:
             "org_name": "Bad Corp",
             "context_of_origin": "not-a-real-context",
             "total_licenses": 5,
-        })
+        }, headers=_admin_headers())
         assert res.status_code == 422
 
     def test_rejects_zero_licenses(self, client):
@@ -79,7 +83,7 @@ class TestCreateOrg:
             "org_name": "Empty Corp",
             "context_of_origin": "b2b-partner",
             "total_licenses": 0,
-        })
+        }, headers=_admin_headers())
         assert res.status_code == 422
 
     def test_invite_code_is_unique_per_org(self, client):
@@ -88,8 +92,24 @@ class TestCreateOrg:
                 "org_name": "Org",
                 "context_of_origin": "b2b-partner",
                 "total_licenses": 1,
-            }).json()["invite_code"]
+            }, headers=_admin_headers()).json()["invite_code"]
         assert create() != create()
+
+    def test_create_org_without_admin_key_returns_403(self, client):
+        res = client.post("/b2b/create-org", json={
+            "org_name": "Sneaky Corp",
+            "context_of_origin": "b2b-partner",
+            "total_licenses": 5,
+        })
+        assert res.status_code == 403
+
+    def test_create_org_with_wrong_key_returns_403(self, client):
+        res = client.post("/b2b/create-org", json={
+            "org_name": "Sneaky Corp",
+            "context_of_origin": "b2b-partner",
+            "total_licenses": 5,
+        }, headers={"X-Admin-Key": "wrong-key"})
+        assert res.status_code == 403
 
 
 # ---------------------------------------------------------------------------
@@ -235,19 +255,19 @@ class TestRegenerateInvite:
     def test_new_code_is_different(self, client, db):
         org = _make_org(db)
         old_code = org.invite_code
-        res = client.post(f"/b2b/generate-invites/{org.id}")
+        res = client.post(f"/b2b/generate-invites/{org.id}", headers=_admin_headers())
         assert res.status_code == 200
         assert res.json()["invite_code"] != old_code
 
     def test_old_code_no_longer_valid(self, client, db):
         org = _make_org(db)
         old_code = org.invite_code
-        client.post(f"/b2b/generate-invites/{org.id}")
+        client.post(f"/b2b/generate-invites/{org.id}", headers=_admin_headers())
         # Old code should now be 404
         res = client.get("/b2b/validate-invite", params={"code": old_code})
         assert res.status_code == 404
 
     def test_nonexistent_org_returns_404(self, client):
         fake_id = str(uuid.uuid4())
-        res = client.post(f"/b2b/generate-invites/{fake_id}")
+        res = client.post(f"/b2b/generate-invites/{fake_id}", headers=_admin_headers())
         assert res.status_code == 404

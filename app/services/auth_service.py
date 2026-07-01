@@ -4,7 +4,9 @@ import logging
 import httpx
 
 logger = logging.getLogger(__name__)
-from jose import jwt as jose_jwt, JWTError
+import jwt as pyjwt
+from jwt import PyJWKClient
+from jwt.exceptions import PyJWTError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -49,22 +51,17 @@ async def exchange_google_code(code: str, code_verifier: str, redirect_uri: str)
 
 async def _verify_google_id_token(id_token: str, access_token: str | None = None) -> dict:
     """Verify Google ID token signature, iss, aud, and exp."""
-    async with httpx.AsyncClient() as client:
-        certs_response = await client.get(GOOGLE_CERTS_URL)
-        certs_response.raise_for_status()
-        jwks = certs_response.json()
-
     try:
-        claims = jose_jwt.decode(
+        jwks_client = PyJWKClient(GOOGLE_CERTS_URL)
+        signing_key = jwks_client.get_signing_key_from_jwt(id_token)
+        claims = pyjwt.decode(
             id_token,
-            jwks,
+            signing_key.key,
             algorithms=["RS256"],
             audience=settings.GOOGLE_CLIENT_ID,
             issuer=GOOGLE_ISSUER,
-            # at_hash requires the access_token to verify; pass it when present
-            access_token=access_token,
         )
-    except JWTError as e:
+    except (PyJWTError, Exception) as e:
         raise ValueError(f"Invalid Google ID token: {e}")
 
     return claims

@@ -25,6 +25,7 @@ from app.core.llm import llm_service, BEDROCK_MODELS, PROMPT_TEMPLATE_VERSION
 from app.services.email_service import send_report_ready_email
 from app.services.pdf_service import generate_pdf, render_html, scores_from_db_row
 from app.services.report_validator import validate_report
+from app.services.score_claim_checker import check_score_claims
 
 logger = logging.getLogger(__name__)
 from app.models.bias_flag import BiasFlag
@@ -249,9 +250,21 @@ def run_scoring_pipeline(
                 db.commit()
                 raise ValueError(f"Report flagged for review. Violations: {violations}")
 
+        # ── 6c. Score-claim cross-check ────────────────────────────────────
+        claims_valid, mismatches = check_score_claims(llm_json, profile)
+        if mismatches:
+            logger.warning(
+                "score_claim_mismatch",
+                extra={"session_id": str(session.id), "mismatches": mismatches},
+            )
+            if len(mismatches) > 3:
+                report.status = "flagged_for_review"
+                db.commit()
+                raise ValueError(f"Report flagged: {len(mismatches)} score claim mismatches")
+
         # ── 7. Persist report JSON ─────────────────────────────────────────
         used_model = model_override or llm_service._defaults["report_generation"]
-        report.raw_llm_json = json.dumps(llm_json)
+        report.raw_llm_json = json.dumps({**llm_json, "_mismatches": mismatches} if mismatches else llm_json)
         report.prompt_template_version = PROMPT_TEMPLATE_VERSION
         report.llm_model = BEDROCK_MODELS.get(used_model, used_model)
         report.generated_at = datetime.now(timezone.utc)

@@ -4,7 +4,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 
 logger = logging.getLogger(__name__)
-from jose import JWTError
+from jwt.exceptions import PyJWTError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -67,7 +67,7 @@ async def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
 
     try:
         payload = decode_token(body.refresh_token)
-    except JWTError:
+    except (PyJWTError, Exception):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
 
     if payload.get("type") != "refresh":
@@ -93,7 +93,7 @@ async def refresh_token(body: RefreshRequest, db: Session = Depends(get_db)):
 async def logout(body: LogoutRequest, db: Session = Depends(get_db)):
     try:
         payload = decode_token(body.refresh_token)
-    except JWTError:
+    except (PyJWTError, Exception):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     if payload.get("type") != "refresh":
