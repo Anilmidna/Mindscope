@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     # Razorpay
     RAZORPAY_KEY_ID: str = ""
     RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_WEBHOOK_SECRET: str = ""
 
     # Bedrock Guardrails (Layer 1 — set after running scripts/create_bedrock_guardrail.py)
     BEDROCK_GUARDRAIL_ID: str = ""
@@ -43,6 +44,9 @@ class Settings(BaseSettings):
 
     # Admin
     ADMIN_API_KEY: str = ""
+
+    # Cookie security
+    COOKIE_SECURE: bool = True
 
     # App
     APP_ENV: str = "development"

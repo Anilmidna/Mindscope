@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
+import { setToken } from '../auth';
 import Footer from '../components/Footer';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -36,8 +37,7 @@ export default function Login() {
       code_verifier: verifier,
       redirect_uri: REDIRECT_URI,
     }).then(({ data }) => {
-      sessionStorage.setItem('access_token', data.access_token);
-      sessionStorage.setItem('refresh_token', data.refresh_token);
+      setToken(data.access_token);
       // Check if B2B invite pending
       const pendingInvite = sessionStorage.getItem('pending_invite');
       if (pendingInvite) {

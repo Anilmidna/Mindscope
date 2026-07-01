@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from uuid import UUID
-from datetime import datetime
+from datetime import date, datetime
 
 VALID_CONTEXTS = {"standalone-public", "DATE-college", "training-program", "b2b-partner"}
 
@@ -47,6 +47,8 @@ class IntakeFormRequest(BaseModel):
     education_level: Optional[str] = Field(None, max_length=100)
     preferred_work_style: Optional[str] = Field(None, max_length=100)
     consent_given_at: datetime = Field(..., description="DPDP: timestamp when user accepted data processing consent")
+    date_of_birth: Optional[date] = Field(None, description="DPDP §9: required for age-based consent checks")
+    parent_email: Optional[str] = Field(None, max_length=254, description="Required if age 16-17")
 
     @model_validator(mode="after")
     def validate_life_stage(self):
@@ -69,6 +71,9 @@ class IntakeFormResponse(BaseModel):
     satisfaction: Optional[int]
     challenges: Optional[str]
     consent_given_at: datetime
+    date_of_birth: Optional[date] = None
+    parent_email: Optional[str] = None
+    minor_consent_pending: Optional[bool] = None
 
     class Config:
         from_attributes = True

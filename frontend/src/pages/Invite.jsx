@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import client from '../api/client';
+import { getToken } from '../auth';
 
 export default function Invite() {
   const { code } = useParams();
@@ -16,7 +17,7 @@ export default function Invite() {
   }, [code]);
 
   async function activate() {
-    const token = sessionStorage.getItem('access_token');
+    const token = getToken();
     if (!token) {
       sessionStorage.setItem('pending_invite', code);
       navigate('/login');

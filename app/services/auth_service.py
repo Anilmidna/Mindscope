@@ -84,7 +84,7 @@ def upsert_user(db: Session, google_sub: str, email: str, name: str | None) -> U
     return user
 
 
-def blocklist_refresh_token(db: Session, token: str) -> None:
+def blocklist_refresh_token(db: Session, token: str, jti: str = None, user_id: str = None) -> None:
     h = _token_hash(token)
     already_blocked = (
         db.query(RefreshTokenBlocklist)
@@ -93,7 +93,7 @@ def blocklist_refresh_token(db: Session, token: str) -> None:
     )
     if already_blocked:
         return
-    db.add(RefreshTokenBlocklist(token_hash=h))
+    db.add(RefreshTokenBlocklist(token_hash=h, jti=jti, user_id=user_id))
     db.commit()
 
 
@@ -104,3 +104,20 @@ def is_refresh_token_blocked(db: Session, token: str) -> bool:
         .first()
         is not None
     )
+
+
+def is_jti_blocked(db: Session, jti: str) -> bool:
+    return (
+        db.query(RefreshTokenBlocklist)
+        .filter(RefreshTokenBlocklist.jti == jti)
+        .first()
+        is not None
+    )
+
+
+def blocklist_all_user_refresh_tokens(db: Session, user_id: str) -> None:
+    """Nuclear option: blocklist a placeholder entry keyed by user_id to force re-login."""
+    import uuid as _uuid
+    sentinel_hash = _token_hash(f"user_revoke:{user_id}:{_uuid.uuid4()}")
+    db.add(RefreshTokenBlocklist(token_hash=sentinel_hash, user_id=user_id))
+    db.commit()

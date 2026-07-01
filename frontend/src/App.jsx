@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { getToken } from './auth';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Intake from './pages/Intake';
@@ -13,7 +14,7 @@ import Refund from './pages/Refund';
 import Contact from './pages/Contact';
 
 function ProtectedRoute({ children }) {
-  const token = sessionStorage.getItem('access_token');
+  const token = getToken();
   return token ? children : <Navigate to="/login" replace />;
 }
 

@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Text, Uuid, ForeignKey, DateTime, func
+from sqlalchemy import Column, String, Integer, Text, Uuid, ForeignKey, DateTime, Date, Boolean, func
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -24,6 +24,11 @@ class IntakeForm(Base):
     preferred_work_style = Column(String(100), nullable=True)
 
     consent_given_at = Column(DateTime(timezone=True), nullable=False)
+
+    # DPDP §9 minor consent
+    date_of_birth = Column(Date, nullable=True)
+    parent_email = Column(String(254), nullable=True)
+    minor_consent_pending = Column(Boolean, nullable=True, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

@@ -141,7 +141,8 @@ class TestLogoutThenRefresh:
         response = client.post("/auth/refresh", json={"refresh_token": refresh_token})
 
         assert response.status_code == 401
-        assert "revoked" in response.json()["detail"].lower()
+        detail = response.json()["detail"].lower()
+        assert "revoked" in detail or "reuse" in detail
 
     def test_logout_is_idempotent(self, client, db):
         user = _make_user(db)

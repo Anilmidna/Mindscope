@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import secrets
 from typing import Optional
 import jwt
 from jwt.exceptions import PyJWTError
@@ -24,6 +25,7 @@ def create_refresh_token(user_id: str) -> str:
     payload = {
         "sub": user_id,
         "type": "refresh",
+        "jti": secrets.token_hex(16),
         "exp": expire,
         "iat": datetime.now(timezone.utc),
     }

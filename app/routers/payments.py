@@ -4,15 +4,20 @@ Payment endpoints.
 POST /payments/create-order   — create Razorpay order for a session (B2C only)
 POST /payments/verify         — verify payment signature + mark session paid
 GET  /payments/status/{id}    — check payment status for a session
+POST /payments/webhook        — Razorpay server-to-server webhook (no auth, HMAC-verified)
 """
+import hashlib
+import hmac
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
 from app.db.session import get_db
+from app.middleware.rate_limit import limiter
+from app.models.payment import Payment
 from app.models.user import User
 from app.schemas.payment import (
     CreateOrderRequest,
@@ -89,3 +94,53 @@ def payment_status(
         status=payment.status,
         amount=payment.amount,
     )
+
+
+@router.post("/webhook", status_code=status.HTTP_200_OK)
+@limiter.limit("120/minute")
+async def razorpay_webhook(request: Request, db: Session = Depends(get_db)):
+    """Razorpay server-to-server callback. Auth is HMAC signature, not JWT."""
+    raw_body = await request.body()
+    signature = request.headers.get("X-Razorpay-Signature", "")
+
+    if not settings.RAZORPAY_WEBHOOK_SECRET:
+        logger.warning("RAZORPAY_WEBHOOK_SECRET not configured — rejecting webhook")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Webhook not configured")
+
+    expected = hmac.new(
+        settings.RAZORPAY_WEBHOOK_SECRET.encode(),
+        raw_body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        logger.warning("Razorpay webhook signature invalid")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid signature")
+
+    try:
+        event = __import__("json").loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
+
+    event_type = event.get("event")
+    entity = event.get("payload", {}).get("payment", {}).get("entity", {})
+    order_id = entity.get("order_id")
+
+    if event_type == "payment.captured":
+        if order_id:
+            payment = db.query(Payment).filter(Payment.razorpay_order_id == order_id).first()
+            if payment and payment.status != "paid":
+                payment.status = "paid"
+                payment.razorpay_payment_id = entity.get("id", payment.razorpay_payment_id)
+                db.commit()
+                logger.info("Webhook: payment captured", extra={"order_id": order_id})
+
+    elif event_type == "payment.failed":
+        if order_id:
+            payment = db.query(Payment).filter(Payment.razorpay_order_id == order_id).first()
+            if payment and payment.status == "created":
+                payment.status = "failed"
+                db.commit()
+                logger.info("Webhook: payment failed", extra={"order_id": order_id})
+
+    return {"status": "ok"}

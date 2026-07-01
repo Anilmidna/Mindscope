@@ -1,5 +1,6 @@
 import logging
 import uuid
+from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks
 
 logger = logging.getLogger(__name__)
@@ -127,6 +128,23 @@ def submit_intake(
     session = get_session_or_404(db, session_id, current_user.id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
+
+    if body.date_of_birth is not None:
+        today = date.today()
+        age = today.year - body.date_of_birth.year - (
+            (today.month, today.day) < (body.date_of_birth.month, body.date_of_birth.day)
+        )
+        if age < 16:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Users under 16 are not permitted to use MindScope",
+            )
+        if age < 18 and not body.parent_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Users aged 16-17 must provide a parent or guardian email (DPDP Act §9)",
+            )
+
     intake = save_intake(db, session, body)
     return intake
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
+import { clearToken } from '../auth';
 import Footer from '../components/Footer';
 
 const STATUS_COLORS = {
@@ -68,7 +69,7 @@ export default function Dashboard() {
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.logo}>MindScope</h1>
-        <button style={styles.logoutBtn} onClick={() => { sessionStorage.clear(); navigate('/login'); }}>
+        <button style={styles.logoutBtn} onClick={() => { client.post('/auth/logout', {}).catch(() => {}); clearToken(); navigate('/login'); }}>
           Logout
         </button>
       </header>

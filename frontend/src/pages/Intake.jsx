@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import client from '../api/client';
 
@@ -25,16 +25,33 @@ const WORK_STYLES = [
   'Freelance / independent', 'Government / public sector', 'Not sure yet',
 ];
 
+function calcAge(dob) {
+  if (!dob) return null;
+  const today = new Date();
+  const birth = new Date(dob);
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
+    age -= 1;
+  }
+  return age;
+}
+
 export default function Intake() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     life_stage: '', education_level: '', domain: '', specialization: '',
     future_goals: '', satisfaction: 5, challenges: '', preferred_work_style: '',
+    date_of_birth: '', parent_email: '',
   });
   const [consentGiven, setConsentGiven] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const age = useMemo(() => calcAge(form.date_of_birth), [form.date_of_birth]);
+  const isMinor = age !== null && age < 18;
+  const isUnder16 = age !== null && age < 16;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -48,13 +65,20 @@ export default function Intake() {
       setError('Please accept the data processing consent to continue.');
       return;
     }
+    if (isUnder16) {
+      setError('MindScope is available for users aged 16 and above.');
+      return;
+    }
     setSaving(true);
     setError('');
     try {
-      await client.post(`/sessions/${sessionId}/intake`, {
+      const payload = {
         ...form,
         consent_given_at: new Date().toISOString(),
-      });
+        date_of_birth: form.date_of_birth || undefined,
+        parent_email: form.parent_email || undefined,
+      };
+      await client.post(`/sessions/${sessionId}/intake`, payload);
       navigate(`/assessment/${sessionId}`);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to save. Please try again.');
@@ -122,6 +146,29 @@ export default function Intake() {
             </select>
           </Field>
 
+          <Field label="Date of Birth (optional)">
+            <input type="date" value={form.date_of_birth} onChange={(e) => set('date_of_birth', e.target.value)} style={styles.input} max={new Date().toISOString().split('T')[0]} />
+            {isUnder16 && (
+              <p style={styles.ageError}>MindScope is available for users aged 16 and above.</p>
+            )}
+          </Field>
+
+          {isMinor && !isUnder16 && (
+            <Field label="Parent / Guardian Email *">
+              <input
+                type="email"
+                value={form.parent_email}
+                onChange={(e) => set('parent_email', e.target.value)}
+                style={styles.input}
+                placeholder="parent@example.com"
+                required
+              />
+              <small style={{ color: '#555', fontSize: '0.8rem' }}>
+                As you are under 18, we require a parent or guardian's email for consent as per India's DPDP Act.
+              </small>
+            </Field>
+          )}
+
           <label style={styles.consentLabel}>
             <input
               type="checkbox"
@@ -139,7 +186,7 @@ export default function Intake() {
             </span>
           </label>
 
-          <button type="submit" style={{ ...styles.btn, opacity: consentGiven ? 1 : 0.5 }} disabled={saving || !consentGiven}>
+          <button type="submit" style={{ ...styles.btn, opacity: (consentGiven && !isUnder16) ? 1 : 0.5 }} disabled={saving || !consentGiven || isUnder16}>
             {saving ? 'Saving...' : 'Start Assessment →'}
           </button>
         </form>
@@ -168,4 +215,5 @@ const styles = {
   sliderLabels: { display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#999', marginTop: '4px' },
   charCount: { color: '#999', fontSize: '0.75rem' },
   consentLabel: { display: 'flex', alignItems: 'flex-start', gap: '4px', fontSize: '0.82rem', color: '#555', lineHeight: 1.5, marginBottom: '20px', cursor: 'pointer' },
+  ageError: { color: '#e53935', fontSize: '0.85rem', marginTop: '6px' },
 };

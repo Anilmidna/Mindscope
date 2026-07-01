@@ -100,16 +100,27 @@ def create_session(db: Session, user_id: uuid.UUID, context_of_origin: str) -> A
 
 
 def save_intake(db: Session, session: AssessmentSession, data: IntakeFormRequest) -> IntakeForm:
+    from datetime import date as _date
+    minor_consent_pending = False
+    if data.date_of_birth is not None:
+        today = _date.today()
+        age = today.year - data.date_of_birth.year - (
+            (today.month, today.day) < (data.date_of_birth.month, data.date_of_birth.day)
+        )
+        if 16 <= age < 18:
+            minor_consent_pending = True
+
     existing = db.query(IntakeForm).filter(IntakeForm.session_id == session.id).first()
     if existing:
         for field in ("life_stage", "persona", "domain", "specialization", "future_goals",
                       "satisfaction", "challenges", "education_level", "preferred_work_style",
-                      "consent_given_at"):
+                      "consent_given_at", "date_of_birth", "parent_email"):
             val = getattr(data, field, None)
             if field == "persona":
                 val = data.persona
             if val is not None:
                 setattr(existing, field, val)
+        existing.minor_consent_pending = minor_consent_pending
         db.commit()
         db.refresh(existing)
         return existing
@@ -126,6 +137,9 @@ def save_intake(db: Session, session: AssessmentSession, data: IntakeFormRequest
         education_level=data.education_level,
         preferred_work_style=data.preferred_work_style,
         consent_given_at=data.consent_given_at,
+        date_of_birth=data.date_of_birth,
+        parent_email=data.parent_email,
+        minor_consent_pending=minor_consent_pending,
     )
     db.add(intake)
     db.commit()
