@@ -39,17 +39,32 @@ from app.middleware.rate_limit import limiter, get_user_id
 router = APIRouter()
 
 
+# Overridable in tests so the background task uses the same DB as the test client
+_db_factory = SessionLocal
+
+
 def _run_scoring_in_background(session_id: uuid.UUID) -> None:
-    """Background task wrapper — creates its own DB session so it outlives the request."""
+    """Background task wrapper — creates its own DB session so it outlives the request.
+
+    Must NOT re-raise exceptions: the 202 response is already sent, and any exception
+    would leak through Starlette's ASGI portal into the next request's context.
+    Report status is committed to DB before any exception propagates out of the pipeline.
+    """
     from app.models.session import AssessmentSession
-    db = SessionLocal()
+    db = _db_factory()
     try:
         session = db.query(AssessmentSession).filter(AssessmentSession.id == session_id).first()
         if session:
             run_scoring_pipeline(db, session)
-    except Exception:
-        db.rollback()
-        raise
+    except Exception as exc:
+        logger.error(
+            "Scoring pipeline failed for session %s: %s",
+            session_id, exc, exc_info=True,
+        )
+        try:
+            db.rollback()
+        except Exception:
+            pass
     finally:
         db.close()
 

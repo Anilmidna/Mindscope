@@ -54,7 +54,12 @@ def client():
         finally:
             session.close()
 
+    import app.routers.sessions as sessions_router
+    original_factory = sessions_router._db_factory
+    sessions_router._db_factory = TestingSessionLocal
+
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+    sessions_router._db_factory = original_factory
