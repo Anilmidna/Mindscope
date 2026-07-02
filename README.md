@@ -7,12 +7,12 @@ An AI-powered psychometric assessment platform combining scientifically validate
 - **Backend:** FastAPI (Python)
 - **Database:** PostgreSQL (Amazon RDS)
 - **AI:** Claude Opus (reports) + Sonnet (corrections) via Amazon Bedrock
-- **PDF:** WeasyPrint + Jinja2
+- **PDF:** Playwright on AWS Lambda + Jinja2 (WeasyPrint fallback for local dev)
 - **Storage:** Amazon S3
 - **Email:** Amazon SES
 - **Auth:** Google OAuth 2.0 + JWT
-- **Hosting:** AWS ECS (Fargate) + ECR
-- **Frontend:** React (Vite) — deployed on Vercel
+- **Backend hosting:** AWS ECS Express Mode + ECR
+- **Frontend hosting:** S3 + CloudFront (static SPA — `npm run build` → `dist/` → S3 bucket `mindscope-frontend`)
 
 ## Project Structure
 
@@ -120,18 +120,34 @@ aws ecs create-service \
 alembic upgrade head
 ```
 
-### Frontend — Vercel
+### Frontend — S3 + CloudFront
+
+The React/Vite SPA is hosted as a static bundle on S3 + CloudFront. No server runtime is needed at request time.
 
 ```bash
 cd frontend
-# Install Vercel CLI once
-npm i -g vercel
 
-# Deploy (first time — follow prompts)
-vercel --prod
+# 1. Build the production bundle
+npm run build   # outputs to frontend/dist/
 
-# Set environment variable in Vercel dashboard:
-# VITE_API_URL = https://<your-ecs-alb-or-domain>
+# 2. Upload to S3 (mindscope-frontend bucket — separate from mindscope-reports)
+aws s3 sync dist/ s3://mindscope-frontend --delete
+
+# 3. Invalidate CloudFront cache after every deploy
+aws cloudfront create-invalidation --distribution-id <DISTRIBUTION_ID> --paths "/*"
+```
+
+**One-time CloudFront setup (do once):**
+- Create S3 bucket `mindscope-frontend` (static website hosting or OAC — do NOT share with `mindscope-reports`)
+- Create a CloudFront distribution pointing at the bucket
+- **SPA routing fix (required):** add a custom error response — HTTP 403/404 → `/index.html`, response code 200. Without this, any hard refresh on a non-root route (e.g. `/dashboard`) will 404.
+- **ACM certificate must be in `us-east-1`** regardless of which region the rest of the stack runs in — CloudFront hard requirement.
+- Add the CloudFront domain (and custom domain once attached) to the backend's `CORS_ORIGINS` env var.
+
+**Environment variable for the frontend build:**
+```
+VITE_API_URL=https://<your-ecs-alb-or-domain>
+VITE_GOOGLE_CLIENT_ID=<your-google-client-id>
 ```
 
 ### IAM Roles Required

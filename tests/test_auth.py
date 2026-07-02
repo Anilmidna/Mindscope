@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from jose import jwt
+import jwt
 
 from app.core.config import settings
 from app.core.security import create_refresh_token
