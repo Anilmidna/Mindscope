@@ -96,6 +96,11 @@ aws secretsmanager create-secret --name mindscope/jwt-secret \
   --secret-string "$(openssl rand -base64 48)"
 aws secretsmanager create-secret --name mindscope/google-oauth \
   --secret-string '{"client_id":"...","client_secret":"...","redirect_uri":"https://<your-domain>/auth/google/callback"}'
+aws secretsmanager create-secret --name mindscope/admin-api-key \
+  --secret-string "$(python -c 'import secrets; print(secrets.token_hex(32))')"
+# ADMIN_API_KEY gates /admin/* (runtime model switching) and /b2b/* (org/invite creation).
+# The app fails closed with 403 if this is unset — but that will silently break those
+# endpoints in production, so it must be set before first deploy.
 
 # 5. Register task definition
 aws ecs register-task-definition --cli-input-json file://infra/ecs-task-definition.json
